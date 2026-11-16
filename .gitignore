@@ -6,3 +6,4 @@ test-results/
 .vite/
 .env
 .env.*
+__pycache__/

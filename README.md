@@ -26,3 +26,6 @@ is not: it is read by Pocket TTS Estonian in a voice cloned, with permission,
 from the children's dad reading aloud, and all rights to it are reserved. The
 real stories are read by TartuNLP XTTS v2 in his voice, which the app's credit
 line names, with its licence.
+
+The code that reads them aloud is in `reader/`, and how it was chosen and
+tuned is in [docs/reader.md](docs/reader.md).
