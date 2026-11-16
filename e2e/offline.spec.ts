@@ -39,6 +39,7 @@ test('the library renders offline after a reload', async ({ page, context }) => 
 test('a saved story plays offline and seeks to 60 s', async ({ page, context }) => {
   await openControlled(page);
   await save(page, long.route);
+  await page.goto('/stories/');
   await expect(page.locator(`.story-card[href="#${long.route}"] [data-card-saved]`)).toBeVisible();
   await context.setOffline(true);
   await page.reload();

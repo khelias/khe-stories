@@ -1,7 +1,8 @@
 /* Unejänku. Its own look (estate ADR-028 point 1, extended to stories.khe.ee by estate
-   ADR-031): system type, the reading serif, large rounded cards and a material behind the
-   player; the family header and footer stay. Committed to the dark theme (estate ADR-021
-   point 2): a bedtime story is listened to in a dark room. */
+   ADR-031), with its own header and footer in the family build (estate ADR-032): a night
+   sky, each story's picture as its cover, large rounded cards, the reading serif, and a
+   listening view where the picture blurs behind the lines being read. Committed to the dark
+   theme (estate ADR-021 point 2): a bedtime story is listened to in a dark room. */
 
 @font-face {
   font-family: 'Source Serif 4';
@@ -23,98 +24,175 @@
 
 body.stories-page {
   --system: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --title: 'Source Serif 4', ui-serif, Georgia, serif;
   /* New York on Apple systems; elsewhere the family serif. */
   --reading: ui-serif, 'New York', 'Source Serif 4', Georgia, serif;
-  --fill: #1c1c1e;
-  --fill-raised: #2c2c2e;
-  --fill-current: #3a3a3c;
+  --night: #0b0f1d;
+  --ground: #0a1628;
   --label: #ffffff;
-  --label-2: #a1a1a6;
-  --label-on-glass: #c7c7cc;
-  --text-dimmed: rgb(255 255 255 / 0.5);
-  --art: #1b1733;
-  --art-glow: #f2c46d;
-  --glass: rgb(40 40 44 / 0.62);
-  --glass-edge: rgb(255 255 255 / 0.16);
-  --player-space: 17.5rem;
+  --label-2: rgb(255 255 255 / 0.66);
+  --label-3: rgb(255 255 255 / 0.5);
+  --line-dim: rgb(255 255 255 / 0.32);
+  --gold: #f3d58a;
+  --bunny: #f4a8bf;
+  --glass: rgb(30 34 48 / 0.42);
+  --glass-solid: rgb(30 34 48);
+  --glass-edge: rgb(255 255 255 / 0.22);
+  --sheet: rgb(28 32 52 / 0.72);
+  --sheet-solid: rgb(28 32 52);
+  --row: rgb(255 255 255 / 0.08);
+  --art: #121a33;
+  --edge: 16px;
+  --dock-space: 15rem;
+  background: var(--night);
   color: var(--label);
   font-family: var(--system);
-}
-
-.stories-page h1,
-.stories-page h2 {
-  font-weight: 700;
 }
 
 .stories-page svg {
   display: block;
 }
 
-.series-mark {
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:where(.stories-page button) {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.stories-app {
+  position: relative;
+}
+
+/* One view at a time: the library, or the open story. */
+[data-view="library"] .story,
+[data-view="story"] .library,
+[data-view="story"] .library-sky,
+[data-view="story"] .app-footer,
+[data-view="story"] .site-footer {
+  display: none;
+}
+
+/* The night over the top of the library, fading into the page. */
+.library-sky {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 360px;
+  opacity: 0.9;
+  -webkit-mask: linear-gradient(#000 40%, transparent);
+  mask: linear-gradient(#000 40%, transparent);
+  pointer-events: none;
+}
+
+.library-sky img,
+.story-art img,
+.story-picture img,
+.story-cover img,
+.mini-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+
+.library-sky img {
+  object-position: 50% 0;
+}
+
+/* The family build's own header (estate ADR-032). */
+.app-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1232px;
+  height: 52px;
+  margin: max(12px, env(safe-area-inset-top)) auto 0;
+  padding: 0 max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
+}
+
+[data-view="story"] .app-header {
+  display: none;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--label);
+  font-family: var(--title);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.app-brand svg {
+  width: 19px;
+  height: 22px;
   fill: none;
-  stroke: var(--art-glow);
+  stroke: var(--bunny);
+  stroke-width: 9;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.stories-app {
-  padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+.app-lang {
+  display: flex;
+  padding: 3px;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.1);
+}
+
+.app-lang button {
+  min-width: 44px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 15px;
+  color: var(--label-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.app-lang button[aria-pressed="true"] {
+  background: rgb(255 255 255 / 0.16);
+  color: var(--label);
+}
+
+/* The public build's family header sits on the sky. */
+.stories-page .site-header {
+  position: relative;
+  z-index: 2;
 }
 
 /* Library */
 .library {
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
-  padding: 1.5rem 0 3rem;
-}
-
-.series {
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-}
-
-.series-head {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0 4px;
-}
-
-.series-mark {
-  width: 24px;
-  height: 28px;
-  stroke: var(--room);
-  stroke-width: 9;
-}
-
-.series-head h1 {
-  font-size: 1.375rem;
-  line-height: 1.27;
-}
-
-.series-note,
-.library-note,
-.story-length {
-  font-size: 0.9375rem;
-  line-height: 1.33;
-  color: var(--label-2);
-}
-
-.library-note {
-  padding: 0 4px;
+  position: relative;
+  max-width: 1232px;
+  margin: 0 auto;
+  padding: 10px max(var(--edge), env(safe-area-inset-right)) 0 max(var(--edge), env(safe-area-inset-left));
 }
 
 .story-card {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 24px;
-  background: var(--fill);
+  position: relative;
+  display: block;
   color: var(--label);
   text-decoration: none;
-  transition: transform 0.1s ease-out;
+  -webkit-tap-highlight-color: transparent;
+  --press-opacity: 1;
+  transition: transform 0.2s ease;
 }
 
 .story-card:active {
@@ -123,166 +201,348 @@ body.stories-page {
 
 .story-art {
   display: block;
-  height: 200px;
   overflow: hidden;
   background: var(--art);
 }
 
-/* The subject sits low in the 600x800 frame (docs/content.md), so a wide crop keeps the bottom. */
-.story-art img,
-.player-tile img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 100%;
-}
-
-.story-card-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1rem 1.125rem 1.125rem;
-}
-
 .story-card-title {
-  font-family: var(--reading);
-  font-size: 1.5rem;
-  line-height: 1.2;
-  font-weight: 700;
-}
-
-.story-card-length {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 34px;
-  padding: 0 16px 0 13px;
-  border-radius: 999px;
-  background: var(--room);
-  color: var(--paper);
-  font-size: 0.9375rem;
+  display: block;
+  font-family: var(--title);
   font-weight: 600;
-}
-
-.story-card-length svg {
-  width: 13px;
-  height: 14px;
-  fill: currentColor;
 }
 
 .story-card-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 6px 14px;
 }
 
-/* A saved story: a quiet mark beside the length, the way a downloaded episode is marked. */
+.story-card-length,
 .story-card-saved {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--label-2);
-  font-size: 0.875rem;
+  gap: 5px;
 }
 
-.story-card-saved svg {
-  width: 16px;
-  height: 16px;
+.story-card-length:empty,
+.story-card-length span:empty {
+  display: none;
+}
+
+.icon-line {
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.2;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-/* Story */
-.story-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  height: 44px;
-  margin: 0.25rem 0 0 -0.25rem;
-  padding: 0 0.5rem 0 0.25rem;
-  color: var(--room);
-  font-size: 1.0625rem;
-  text-decoration: none;
+.story-card-meta svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
 }
 
-.story-back svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.story-card-meta svg:not(.icon-line) {
+  fill: currentColor;
 }
 
-.story-text {
-  display: flex;
-  flex-direction: column;
-  gap: 1.375rem;
-  padding: 0.5rem 0.5rem 0;
+.story-card-saved {
+  color: var(--gold);
 }
 
-.story-text p {
-  font-family: var(--reading);
-  font-size: 1.25rem;
-  line-height: 1.55;
-  color: var(--label);
-  cursor: pointer;
-  scroll-margin-top: 5rem;
-  transition: color 0.3s;
+/* A cover in the grid. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 14px;
 }
 
-[data-started] .story-text p { color: var(--text-dimmed); }
-[data-started] .story-text p.is-current {
-  color: var(--label);
-  font-weight: 500;
+.cards .story-art {
+  aspect-ratio: 1;
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.12);
 }
 
-.story-no-reading {
-  margin: 0.25rem 0.5rem 1.25rem;
-  font-size: 0.9375rem;
-  line-height: 1.4;
+.cards .story-card-title {
+  margin-top: 10px;
+  font-size: 17.5px;
+  line-height: 1.2;
+}
+
+.cards .story-card-meta {
+  margin-top: 4px;
   color: var(--label-2);
+  font-size: 14px;
 }
 
-.story-save {
-  margin: 2.5rem 0.5rem 0;
+.cards .story-card-action,
+.cards .story-card-progress {
+  display: none;
 }
 
-.story-save-button {
+/* The hero: the story in progress, or the first. */
+.hero .story-card {
+  height: 452px;
+  overflow: hidden;
+  border-radius: 30px;
+  background: var(--ground);
+  box-shadow: 0 24px 48px rgb(0 0 0 / 0.45), inset 0 0 0 0.5px rgb(255 255 255 / 0.12);
+}
+
+.hero .story-art {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 300px;
+  background: transparent;
+}
+
+.hero .story-card-body {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 70px 22px 26px;
+  background: linear-gradient(rgb(10 22 40 / 0), var(--ground) 56px);
+}
+
+.hero .story-card-title {
+  font-size: 32px;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+}
+
+.hero .story-card-meta {
+  margin-top: 16px;
+  color: rgb(255 255 255 / 0.78);
+  font-size: 15px;
+}
+
+.story-card-action,
+.pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 44px;
-  padding: 0 18px 0 14px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--fill-raised);
-  color: var(--label);
-  font: inherit;
-  font-size: 0.9375rem;
+  height: 46px;
+  padding: 0 22px 0 18px;
+  border-radius: 23px;
+  background: #fff;
+  color: var(--ground);
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.hero .story-card-meta .story-card-action svg,
+.pill svg {
+  width: 17px;
+  height: 17px;
+}
+
+.pill svg {
+  fill: currentColor;
+}
+
+.hero .story-card-length svg {
+  display: none;
+}
+
+.story-card-progress {
+  position: absolute;
+  inset: auto 0 0;
+  height: 4px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.story-card-progress span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.library-title {
+  padding: 30px 4px 14px;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.library-note {
+  margin: 40px 0 0;
+  padding: 0 24px;
+  color: rgb(255 255 255 / 0.76);
+  font-family: var(--reading);
+  font-size: 17px;
+  font-style: italic;
+  text-align: center;
+}
+
+/* The page's end: the family footer (estate ADR-032) over the hill of the night scene. */
+.app-footer {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 150px max(30px, env(safe-area-inset-right)) max(36px, env(safe-area-inset-bottom)) max(30px, env(safe-area-inset-left));
+  color: rgb(220 228 255 / 0.66);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.app-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url('./art/night.svg') 50% 100% / cover no-repeat;
+  -webkit-mask: linear-gradient(transparent, #000 55%);
+  mask: linear-gradient(transparent, #000 55%);
+}
+
+.app-footer a,
+.site-footer a {
+  color: rgb(232 236 255 / 0.88);
+}
+
+.app-credit {
+  max-width: 34rem;
+}
+
+.app-links {
+  display: flex;
+  gap: 22px;
   font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.1s ease-out;
 }
 
-.story-save-button:active {
-  transform: scale(0.97);
+.app-links a {
+  text-decoration: none;
 }
 
-.story-save-button svg {
-  width: 18px;
-  height: 18px;
+.stories-page .site-footer {
+  padding: 2rem max(24px, env(safe-area-inset-right)) 2.5rem max(24px, env(safe-area-inset-left));
+}
+
+body[data-started] .app-footer,
+body[data-started] .site-footer {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+/* The mini player, back to the started story from the library. */
+.mini {
+  position: fixed;
+  z-index: 20;
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 560px;
+  height: 66px;
+  margin: 0 auto;
+  padding: 0 10px;
+  border-radius: 22px;
+  background: rgb(24 34 58 / 0.6);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(26px) saturate(180%);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.18), 0 12px 30px rgb(0 0 0 / 0.4);
+}
+
+.mini-link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--label);
+  text-decoration: none;
+}
+
+.mini-art {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--art);
+}
+
+.mini-names {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mini-title {
+  overflow: hidden;
+  font-size: 15.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-time {
+  color: var(--label-2);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-play {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+}
+
+.mini-play svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+/* Play and pause swap on one button. */
+.stories-page .icon-pause,
+body[data-playing] .icon-play {
+  display: none;
+}
+
+body[data-playing] .icon-pause {
+  display: block;
+}
+
+/* Glass buttons over a picture. */
+.glass-button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+  box-shadow: inset 0 0 0 0.5px var(--glass-edge);
+  color: #fff;
+  --press-opacity: 0.7;
+}
+
+.glass-button svg {
+  width: 21px;
+  height: 21px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.2;
+  stroke-width: 2.3;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.story-sleep-button svg {
+  fill: currentColor;
+  stroke: none;
 }
 
 .story-save-button .icon-saved,
@@ -295,551 +555,721 @@ body.stories-page {
 }
 
 .story-save-button[aria-pressed="true"] {
-  background: none;
-  padding-left: 4px;
-  color: var(--label-2);
-  font-weight: 500;
-}
-
-.story-text .story-text-failed {
-  font-family: var(--system);
-  font-size: 0.9375rem;
-  color: var(--label-2);
-  cursor: default;
+  color: var(--gold);
 }
 
 .story-save-button[data-saving] {
   opacity: 0.6;
 }
 
-.story-save-error {
-  margin-top: 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--label-2);
+/* The story page: the picture as its header, the title, "Kuula" and the text. */
+.story {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--ground);
 }
 
-.story-credit {
-  margin: 1.5rem 0.5rem 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--label-2);
-}
-
-.story-credit a {
-  color: inherit;
-}
-
-/* The card overrides site.css's link hover colour; the others light up to the label. */
-@media (hover: hover) and (pointer: fine) {
-  .story-card:hover,
-  .story-back:hover,
-  .story-credit a:hover {
-    color: var(--label);
-  }
-}
-
-.stories-page .site-footer {
-  padding: 2rem max(24px, env(safe-area-inset-right)) 2.5rem max(24px, env(safe-area-inset-left));
-}
-
-/* Views on the phone: the library, or the open story. The player names the story there, so
-   the heading is kept for screen readers only, as site.css's .visually-hidden does. */
-@media (max-width: 959px) {
-  .story-head {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  [data-view="library"] .story,
-  [data-view="story"] .library {
-    display: none;
-  }
-
-  [data-view="story"] .stories-app {
-    padding-bottom: 3rem;
-  }
-
-  [data-view="story"] .site-footer,
-  body[data-started] .site-footer {
-    padding-bottom: calc(var(--player-space) + env(safe-area-inset-bottom));
-  }
-
-  body:not([data-started])[data-view="library"] .player {
-    display: none;
-  }
-}
-
-/* Player: the one translucent layer, floating over the text. */
-.player {
-  position: fixed;
-  left: max(8px, env(safe-area-inset-left));
-  right: max(8px, env(safe-area-inset-right));
-  bottom: max(12px, env(safe-area-inset-bottom));
-  z-index: 10;
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  grid-template-areas:
-    "tile names"
-    "track track"
-    "times times"
-    "controls controls"
-    "ai ai";
-  column-gap: 12px;
-  padding: 14px 16px 12px;
-  border: 0.5px solid var(--glass-edge);
-  border-radius: 30px;
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  backdrop-filter: blur(28px) saturate(180%);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
-  color: var(--label);
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .player { background: rgb(40 40 44 / 0.97); }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .player {
-    background: rgb(40 40 44);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-.player-tile {
-  grid-area: tile;
-  width: 44px;
-  height: 44px;
+.story-picture {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 440px;
   overflow: hidden;
-  border-radius: 10px;
   background: var(--art);
+  -webkit-mask: linear-gradient(#000 78%, transparent);
+  mask: linear-gradient(#000 78%, transparent);
 }
 
-.player-names {
-  grid-area: names;
-  align-self: center;
+.story-veil {
+  display: none;
+}
+
+.story-bar {
+  position: absolute;
+  z-index: 5;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(var(--edge), env(safe-area-inset-left));
+  right: max(var(--edge), env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.story-bar-title,
+.story-sleep-button,
+.story-cover,
+.dock {
+  display: none;
+}
+
+.story-save-error {
+  position: absolute;
+  z-index: 5;
+  top: calc(max(16px, env(safe-area-inset-top)) + 48px);
+  right: max(var(--edge), env(safe-area-inset-right));
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--glass-solid);
+  font-size: 13px;
+}
+
+.story-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
+}
+
+.story-head {
+  padding-top: 400px;
+}
+
+.story-head h2 {
+  font-family: var(--title);
+  font-size: 36px;
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.4);
+}
+
+.story-start {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.pill {
+  flex: none;
+  --press-opacity: 0.8;
+}
+
+.story-start-meta {
+  color: var(--label-2);
+  font-size: 13.5px;
+  line-height: 1.35;
+}
+
+[data-no-audio] .story-start {
+  display: none;
+}
+
+.story-no-reading {
+  margin-top: 16px;
+  color: var(--label-2);
+  font-size: 15px;
+}
+
+.story-text {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  min-width: 0;
+  gap: 20px;
+  padding: 26px 0 64px;
 }
 
-.player-title {
-  font-size: 0.9375rem;
-  line-height: 1.33;
-  font-weight: 600;
+.story-text p {
+  color: rgb(255 255 255 / 0.9);
+  font-family: var(--reading);
+  font-size: 20.5px;
+  line-height: 1.58;
+  scroll-margin: 96px 0;
+  transition: color 0.4s ease;
+}
+
+.story-text-failed {
+  color: var(--label-2);
+}
+
+/* The listening view (B2): the same page once the story plays, the picture blurred behind
+   large lines, the one being read lit. */
+[data-listening] .story {
+  background: none;
+}
+
+[data-listening] .story-picture {
+  position: fixed;
+  inset: -60px;
+  z-index: -2;
+  height: auto;
+  -webkit-mask: none;
+  mask: none;
+  filter: blur(36px);
+}
+
+[data-listening] .story-picture img {
+  object-position: 50% 50%;
+}
+
+[data-listening] .story-veil {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(rgb(4 10 26 / 0.55), rgb(4 10 26 / 0.72) 30%, rgb(4 10 26 / 0.6) 62%, rgb(4 10 26 / 0.92));
+}
+
+[data-listening] .story-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  padding: max(16px, env(safe-area-inset-top)) max(var(--edge), env(safe-area-inset-right)) 12px max(var(--edge), env(safe-area-inset-left));
+  background: linear-gradient(rgb(4 10 26 / 0.85), rgb(4 10 26 / 0));
+}
+
+[data-listening] .story-bar .glass-button {
+  width: 36px;
+  height: 36px;
+}
+
+[data-listening] .story-bar .glass-button svg {
+  width: 19px;
+  height: 19px;
+}
+
+[data-listening] .story-bar-title {
+  display: block;
   overflow: hidden;
+  color: rgb(255 255 255 / 0.85);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.player-series {
-  font-size: 0.8125rem;
-  line-height: 1.38;
-  color: var(--label-on-glass);
-}
-
-.player-track {
-  grid-area: track;
-  position: relative;
-  height: 24px;
-  margin-top: 4px;
-}
-
-.player-track::before,
-.player-fill {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: calc(50% - 2.5px);
-  height: 5px;
-  border-radius: 999px;
-}
-
-.player-track::before {
-  right: 0;
-  background: rgb(255 255 255 / 0.22);
-}
-
-.player-fill {
-  right: 0;
-  background: var(--label);
-  transform: scaleX(0);
-  transform-origin: left;
-}
-
-/* The whole track takes the finger; the thumb is the fill's end, so it is not drawn. */
-.player-seek {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  background: transparent;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.player-seek::-webkit-slider-runnable-track {
-  height: 100%;
-  background: transparent;
-}
-
-.player-seek::-moz-range-track {
-  height: 100%;
-  background: transparent;
-}
-
-.player-seek::-webkit-slider-thumb {
-  width: 24px;
-  height: 24px;
-  border: 0;
-  background: transparent;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.player-seek::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border: 0;
-  background: transparent;
-}
-
-.player-times {
-  grid-area: times;
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--label-on-glass);
-}
-
-.player-total {
+[data-listening] .story-save {
   display: none;
 }
 
-.player-controls {
-  grid-area: controls;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2.5rem;
-  margin-top: 4px;
+[data-listening] .story-sleep-button {
+  display: grid;
 }
 
-.player-controls button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 50%;
+[data-listening] .story-head {
+  display: none;
+}
+
+[data-listening] .story-text {
+  gap: 22px;
+  padding: 38vh 4px calc(var(--dock-space) + 18vh);
+}
+
+[data-listening] .story-text p {
+  color: var(--line-dim);
+  font-family: var(--system);
+  font-size: 27px;
+  line-height: 1.24;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   cursor: pointer;
-  transition: transform 0.1s ease-out;
 }
 
-.player-skip {
+[data-listening] .story-text p.is-current {
+  color: #fff;
+  text-shadow: 0 0 30px rgb(243 213 138 / 0.25);
+}
+
+[data-listening] .dock {
+  position: fixed;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 64px max(26px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(26px, env(safe-area-inset-left));
+  background: linear-gradient(rgb(4 10 26 / 0), rgb(4 10 26 / 0.96) 52px);
+}
+
+.dock-track {
+  position: relative;
+  height: 22px;
+}
+
+.dock-track::before,
+.dock-fill {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8px;
+  height: 7px;
+  border-radius: 4px;
+}
+
+.dock-track::before {
+  background: rgb(255 255 255 / 0.22);
+}
+
+.dock-fill {
+  background: rgb(255 255 255 / 0.92);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.dock-seek {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dock-times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  color: var(--label-2);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.dock-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 44px;
+  margin-top: 14px;
+}
+
+.dock-skip {
   width: 48px;
   height: 48px;
-  background: none;
-  color: var(--label);
+  display: grid;
+  place-items: center;
+  --press-opacity: 0.6;
 }
 
-.player-skip svg {
-  width: 30px;
-  height: 30px;
+.dock-skip svg {
+  width: 38px;
+  height: 38px;
+}
+
+.dock-skip .stroke {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.9;
+  stroke-width: 2.1;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.player-skip text {
+.dock-skip text {
   fill: currentColor;
-  stroke: none;
   font-family: var(--system);
-  font-size: 8px;
+  font-size: 8.6px;
   font-weight: 700;
   text-anchor: middle;
 }
 
-.player-play {
-  width: 64px;
-  height: 64px;
-  background: var(--room);
-  color: var(--paper);
+.dock-play {
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ground);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.3);
 }
 
-.player-play svg {
-  width: 26px;
-  height: 26px;
+.dock-play svg {
+  width: 32px;
+  height: 32px;
   fill: currentColor;
 }
 
-.player-play .icon-pause,
-[data-playing] .player-play .icon-play {
-  display: none;
-}
-
-[data-playing] .player-play .icon-pause {
-  display: block;
-  width: 24px;
-  height: 24px;
-}
-
-.player-controls button:active {
-  transform: scale(0.92);
-}
-
-/* The AI voice is said where it is heard (AI Act Art. 50). */
-.player-ai {
-  grid-area: ai;
-  margin-top: 2px;
-  font-size: 0.6875rem;
-  line-height: 1.4;
+.dock-ai {
+  margin-top: 16px;
+  color: var(--label-3);
+  font-size: 12.5px;
   text-align: center;
-  color: var(--label-on-glass);
 }
 
-/* A story without a reading, or whose audio failed, is text alone. */
-body[data-no-audio] :is(.player, .story-credit) {
-  display: none;
+/* The sleep sheet. */
+.sleep-sheet {
+  width: auto;
+  max-width: 520px;
+  max-height: none;
+  margin: auto max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  padding: 26px 18px 30px;
+  border: 0;
+  border-radius: 42px;
+  background: var(--sheet);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: inset 0 0.5px rgb(255 255 255 / 0.25), 0 -10px 40px rgb(0 0 0 / 0.4);
+  color: var(--label);
 }
 
-/* From 960px the library is a column beside the open story, and the player floats under it. */
-@media (min-width: 960px) {
-  body.stories-page {
-    --aside: 360px;
+.sleep-sheet::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+
+.sleep-sheet h2 {
+  margin: 0 4px 14px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sleep-options {
+  margin-bottom: 14px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--row);
+}
+
+.sleep-options button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  font-size: 17px;
+  text-align: left;
+}
+
+.sleep-options button + button {
+  box-shadow: inset 0 0.5px rgb(255 255 255 / 0.12);
+}
+
+.sleep-options svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  visibility: hidden;
+}
+
+.sleep-options [aria-checked="true"][role="radio"] {
+  color: #f6dc9c;
+  font-weight: 600;
+}
+
+.sleep-options [aria-checked="true"] svg {
+  visibility: visible;
+}
+
+.switch {
+  position: relative;
+  flex: none;
+  width: 51px;
+  height: 31px;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 0.18);
+  transition: background 0.2s ease;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+[aria-checked="true"] > .switch {
+  background: #e7c46a;
+}
+
+[aria-checked="true"] > .switch::after {
+  transform: translateX(20px);
+}
+
+.sleep-note {
+  padding: 0 6px;
+  color: var(--label-2);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+/* The dim over the last story's final minute; a tap lifts it. */
+.dim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #000;
+  opacity: 0;
+  transition-property: opacity;
+  transition-timing-function: linear;
+}
+
+.dim.is-dark {
+  opacity: 0.92;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .story-card:hover .story-card-title,
+  .app-links a:hover {
+    color: #fff;
   }
 
-  .stories-app {
-    display: grid;
-    grid-template-columns: var(--aside) 1fr;
-    padding: 0;
+  .story-card:hover .story-art {
+    box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.3);
+  }
+
+  [data-listening] .story-text p:hover {
+    color: rgb(255 255 255 / 0.6);
+  }
+
+  [data-listening] .story-text p.is-current:hover {
+    color: #fff;
+  }
+}
+
+/* Desktop: the library at 1200px, the hero text left and picture right, four covers a row;
+   the listening view in two columns, picture and controls left, text right. */
+@media (min-width: 960px) {
+  .library-sky {
+    height: 560px;
+    -webkit-mask: linear-gradient(#000 35%, transparent);
+    mask: linear-gradient(#000 35%, transparent);
+  }
+
+  .app-header {
+    height: 88px;
+    margin-top: 0;
+  }
+
+  .app-brand {
+    gap: 11px;
+    font-size: 25px;
+  }
+
+  .app-brand svg {
+    width: 22px;
+    height: 26px;
   }
 
   .library {
-    gap: 1.625rem;
-    padding: 2.25rem 1.5rem 2.25rem 2.5rem;
+    padding-top: 8px;
   }
 
-  .series-head,
-  .library-note {
-    padding: 0;
+  .hero .story-card {
+    height: 460px;
+    border-radius: 34px;
+    box-shadow: 0 30px 70px rgb(0 0 0 / 0.5), inset 0 0 0 0.5px rgb(255 255 255 / 0.12);
   }
 
-  .series-mark {
-    width: 20px;
-    height: 23px;
-  }
-
-  .series-head h1 {
-    font-size: 1.25rem;
-  }
-
-  .series-note,
-  .library-note {
-    font-size: 0.875rem;
-  }
-
-  .story-card {
-    flex-direction: row;
-    align-items: center;
-    gap: 14px;
-    padding: 10px;
-    border-radius: 18px;
-    background: var(--fill-raised);
-  }
-
-  .story-art {
-    width: 64px;
-    height: 64px;
-    flex-shrink: 0;
-    border-radius: 12px;
-    background: var(--art);
-  }
-
-  .story-back {
-    display: none;
-  }
-
-  .story-card[aria-current="true"] {
-    background: var(--fill-current);
-  }
-
-  .story-card-body {
-    gap: 3px;
-    padding: 0;
-  }
-
-  .story-card-title {
-    font-size: 1.125rem;
-  }
-
-  .story-card-length {
+  .hero .story-art {
+    inset: 0 0 0 auto;
+    width: 58%;
     height: auto;
-    padding: 0;
-    background: none;
-    color: var(--label-on-glass);
-    font-size: 0.875rem;
-    font-weight: 400;
+    -webkit-mask: linear-gradient(90deg, transparent, #000 32%);
+    mask: linear-gradient(90deg, transparent, #000 32%);
   }
 
-  .story-card-length svg {
-    display: none;
+  .hero .story-art img {
+    object-position: 50% 88%;
   }
 
-  .story-card-meta {
-    gap: 10px;
-  }
-
-  .story-card-saved {
-    font-size: 0.8125rem;
-  }
-
-  .story {
-    width: min(660px, 100% - 4rem);
-    margin: 0 auto;
-    padding: 3.25rem 0 3rem;
-  }
-
-  .stories-page .site-footer {
-    padding-bottom: 9rem;
-  }
-
-  .story-head {
+  .hero .story-card-body {
+    inset: 0 auto 0 0;
+    width: 50%;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1.875rem;
+    justify-content: center;
+    padding: 0 0 0 64px;
+    background: none;
+  }
+
+  .hero .story-card-title {
+    font-size: 56px;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+  }
+
+  .hero .story-card-meta {
+    margin-top: 22px;
+  }
+
+  .library-title {
+    padding: 48px 0 20px;
+    font-size: 30px;
+    letter-spacing: -0.02em;
+  }
+
+  .cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 28px;
+  }
+
+  .cards .story-card-title {
+    margin-top: 14px;
+    font-size: 20px;
+  }
+
+  .cards .story-card-meta {
+    font-size: 15px;
+  }
+
+  .app-footer {
+    padding-top: 220px;
+    font-size: 14px;
+  }
+
+  /* The story page in two columns, the picture as a cover on the left and the text on the
+     right; the listening view keeps the columns and blurs the picture behind them. */
+  .story-picture {
+    display: none;
+  }
+
+  [data-listening] .story-picture {
+    display: block;
+  }
+
+  .story-bar {
+    left: max(40px, env(safe-area-inset-left));
+    right: max(40px, env(safe-area-inset-right));
+    top: 28px;
+  }
+
+  [data-listening] .story-bar {
+    top: 0;
+    padding: 28px 40px 16px;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+  }
+
+  [data-listening] .story-bar-title {
+    visibility: hidden;
+  }
+
+  .story-main {
+    display: grid;
+    grid-template-columns: 440px minmax(0, 1fr);
+    gap: 110px;
+    max-width: 1180px;
+    padding: 0 40px;
+  }
+
+  .story-side {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .story-cover {
+    display: block;
+    height: 440px;
+    overflow: hidden;
+    border-radius: 28px;
+    background: var(--art);
+    box-shadow: 0 30px 70px rgb(0 0 0 / 0.55), inset 0 0 0 0.5px rgb(255 255 255 / 0.14);
+  }
+
+  .story-head,
+  [data-listening] .story-head {
+    display: block;
+    padding-top: 26px;
   }
 
   .story-head h2 {
-    font-family: var(--reading);
-    font-size: 3rem;
-    line-height: 1.125;
+    font-size: 34px;
+    text-shadow: none;
   }
 
   .story-text {
-    gap: 1.5rem;
-    padding: 0;
+    padding: 120px 0 96px;
   }
 
   .story-text p {
-    font-size: 1.375rem;
-    line-height: 1.6;
+    font-size: 22px;
   }
 
-  .story-credit,
-  .story-save,
-  .story-no-reading {
-    margin-left: 0;
-  }
-
-  .player-ai {
-    margin-top: 0;
-    text-align: left;
-  }
-
-  .player {
-    left: calc(var(--aside) / 2 + 50vw);
-    right: auto;
-    bottom: 28px;
-    width: min(700px, 100vw - var(--aside) - 4rem);
-    transform: translateX(-50%);
-    grid-template-columns: 52px auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      "tile controls names times"
-      "tile controls track track"
-      "tile controls ai ai";
-    column-gap: 16px;
-    align-items: center;
-    padding: 12px 24px 12px 12px;
-    border-radius: 28px;
-  }
-
-  .player-tile {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
-  }
-
-  .player-names {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 8px;
-  }
-
-  .player-title {
-    font-size: 0.875rem;
-  }
-
-  .player-track {
-    margin-top: 0;
-    height: 16px;
-  }
-
-  .player-times {
-    align-self: baseline;
-    gap: 4px;
-  }
-
-  .player-left {
+  [data-listening] .story-start,
+  [data-listening] .story-no-reading {
     display: none;
   }
 
-  .player-total {
-    display: inline;
+  [data-listening] .dock {
+    position: static;
+    padding: 0;
+    background: none;
   }
 
-  .player-total::before {
-    content: '/ ';
+  [data-listening] .dock-controls {
+    justify-content: flex-start;
+    gap: 40px;
+    margin-left: 40px;
   }
 
-  .player-controls {
-    gap: 0;
-    margin-top: 0;
+  [data-listening] .dock-ai {
+    text-align: left;
   }
 
-  .player-play {
-    width: 52px;
-    height: 52px;
+  [data-listening] .story-text {
+    gap: 30px;
+    padding: 45vh 0;
   }
 
-  .player-play svg,
-  [data-playing] .player-play .icon-pause {
-    width: 20px;
-    height: 20px;
+  [data-listening] .story-text p {
+    font-size: 40px;
+    line-height: 1.22;
+    letter-spacing: -0.02em;
   }
 
-  .player-skip {
-    width: 44px;
-    height: 44px;
+  .sleep-sheet {
+    margin: auto;
+  }
+}
+
+/* Without a backdrop blur, and when the reader asks for less transparency: solid surfaces,
+   and no blur behind the lines. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-button { background: var(--glass-solid); }
+  .mini { background: rgb(24 34 58 / 0.97); }
+  .sleep-sheet { background: var(--sheet-solid); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-button,
+  .mini,
+  .sleep-sheet {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 
-  .player-skip svg {
-    width: 26px;
-    height: 26px;
+  .glass-button { background: var(--glass-solid); }
+  .mini { background: rgb(24 34 58); }
+  .sleep-sheet { background: var(--sheet-solid); }
+
+  [data-listening] .story-picture {
+    filter: none;
+    opacity: 0.35;
+  }
+
+  [data-listening] .story-veil {
+    background: rgb(4 10 26 / 0.9);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .story-card,
   .story-text p,
-  .player-controls button,
-  .story-save-button {
+  .switch,
+  .switch::after {
     transition: none;
   }
 
-  .story-card:active,
-  .story-save-button:active,
-  .player-controls button:active {
+  .story-card:active {
     transform: none;
   }
 }

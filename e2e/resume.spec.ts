@@ -18,7 +18,10 @@ test('a story resumes where listening stopped', async ({ page }) => {
     audio.pause();
   });
   await page.goto('/stories/');
-  await expect(page.locator(`.story-card[href="#${long.route}"] [data-card-length]`)).toHaveText(/^Jätka 0:2[5-6]$/);
+  const hero = page.locator(`[data-hero] .story-card[href="#${long.route}"]`);
+  await expect(hero.locator('.story-card-action')).toHaveText('Kuula edasi');
+  await expect(hero.locator('[data-card-length]')).toHaveText('1 min jäänud');
   await page.goto(`/stories/#${long.route}`);
+  await expect(page.locator('[data-story-length]')).toHaveText(/^Jätka 0:2[5-6]$/);
   await expect.poll(async () => page.evaluate(() => document.querySelector('audio')?.currentTime ?? 0)).toBeGreaterThan(24);
 });

@@ -15,9 +15,16 @@ worker deciding by URL). The content contract is
 
 ## Layout
 
-- `src/index.html` - the page; `build/chrome.ts` fills its markers per build.
+- `src/index.html` - the page; `build/chrome.ts` fills its markers per build:
+  the family header and footer in the public build, the app's own
+  (`renderStoriesHeader`, `renderStoriesFooter`) in the family build
+  ([estate ADR-032](https://github.com/khelias/khe-architecture/blob/main/decisions/032-unejanku-owns-its-header-and-footer.md)).
 - `src/main.ts` starts `offline.ts` (the worker's registration and saving),
-  `stories.ts` (library, reading view, player) and `locale.ts`.
+  `stories.ts` (library with its hero and grid, the story page that turns into
+  the listening view, the mini player) and `locale.ts`.
+- `src/sleep.ts` - the sleep counter, `unejanku:v1:sleep`: how many stories
+  play in a row (the next one in library order, from `stories.ts`'s `ended`
+  handler) and the dim over the last one's final minute.
 - `src/content.ts` - the contract's types and checks, shared with the build,
   `checkArt` among them: the allowlist every story picture passes
   ([estate ADR-033](https://github.com/khelias/khe-architecture/blob/main/decisions/033-story-pictures-are-content.md)).
@@ -47,8 +54,9 @@ Node 26 (`.nvmrc`), npm.
   elsewhere.
 - `npm run lint` - eslint and `khe-design-lint`.
 - `npm run typecheck`, `npm test` (Vitest: the contract, the resume rules,
-  both builds' output), `npm run test:e2e` (Playwright over a public build:
-  offline, Range, the worker's update and prune, resume).
+  both builds' output), `npm run test:e2e` (Playwright over both builds:
+  offline, Range, the worker's update and prune, resume, the listening view,
+  the mini player, the sleep counter's chain, the family header's language).
 - `npm run preview` - serves `output/public` with the demo audio.
 
 TypeScript is two packages on purpose, as in khe-trips: `@typescript/native`
