@@ -65,7 +65,7 @@ describe.each(['public', 'family'] as const)('the %s build', (name) => {
   });
 
   it('has every copy key it uses in both languages', () => {
-    const source = html() + readFileSync('src/stories.ts', 'utf8');
+    const source = html() + readdirSync('src').filter((file) => file.endsWith('.ts')).map((file) => readFileSync(join('src', file), 'utf8')).join('\n');
     const keys = [...source.matchAll(/data-i18n(?:-html|-aria)?="([^"]+)"|dataset\.i18n = '([^']+)'/g)].map((match) => match[1] ?? match[2]);
     expect(keys.length).toBeGreaterThan(10);
     for (const key of keys) {
@@ -74,13 +74,16 @@ describe.each(['public', 'family'] as const)('the %s build', (name) => {
     }
   });
 
-  it('has one header and one footer, no theme toggle and its room on <html>', () => {
-    expect(count(html(), /<header class="site-header[ "]/g)).toBe(1);
-    expect(count(html(), /<footer class="site-footer"/g)).toBe(1);
-    expect(html()).not.toContain('site-header__theme');
+  it('fills every marker and keeps its room on <html>', () => {
     expect(ROOM_IDS).toContain(/<html\b[^>]*\sdata-room="([^"]*)"/.exec(html())?.[1]);
     for (const marker of MARKERS) expect(html()).not.toContain(`<!-- ${marker} -->`);
-    expect(count(html(), /class="site-footer__home"/g)).toBe(1);
+  });
+
+  it('credits the voice once, in its footer, with its links', () => {
+    expect(count(html(), /TartuNLP XTTS v2/g)).toBe(1);
+    const footer = html().slice(html().lastIndexOf('<footer'));
+    expect(footer).toContain(COPY.et.credit);
+    expect(footer).toContain('data-i18n-html="credit"');
   });
 
   it('writes its catalog, worker and no source maps', () => {
@@ -93,6 +96,14 @@ describe.each(['public', 'family'] as const)('the %s build', (name) => {
 
 describe('the public build', () => {
   const html = () => readFileSync(join(outputs.public, 'index.html'), 'utf8');
+
+  it('has the family header and footer, no theme toggle', () => {
+    expect(count(html(), /<header class="site-header[ "]/g)).toBe(1);
+    expect(count(html(), /<footer class="site-footer"/g)).toBe(1);
+    expect(html()).not.toContain('site-header__theme');
+    expect(count(html(), /class="site-footer__home"/g)).toBe(1);
+    expect(html()).not.toContain('class="app-header"');
+  });
 
   it('loads the consent banner from the origin root', () => {
     expect(html()).toMatch(/<script\s+defer src="\/assets\/analytics-consent\.js" data-analytics-token="[0-9a-f]+"/);
@@ -171,7 +182,16 @@ describe('the family build', () => {
     expect(html()).toContain('<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">');
   });
 
+  it('has its own header and footer, not the family ones (estate ADR-032)', () => {
+    expect(html()).not.toMatch(/site-header|site-footer/);
+    expect(count(html(), /<header class="app-header"/g)).toBe(1);
+    expect(count(html(), /<footer class="app-footer"/g)).toBe(1);
+    expect(html()).toMatch(/<button type="button" lang="et" aria-pressed="true" data-lang-option="et">ET<\/button>/);
+    expect(html()).toMatch(/<button type="button" lang="en" aria-pressed="false" data-lang-option="en">EN<\/button>/);
+  });
+
   it('links khe.ee by its full address', () => {
-    expect(html()).toContain('href="https://khe.ee/privacy?lang=et"');
+    expect(html()).toContain('href="https://khe.ee/privacy?lang=et" data-link="privacy"');
+    expect(html()).toContain('href="https://khe.ee/?lang=et" data-link="home"');
   });
 });

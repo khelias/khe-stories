@@ -16,7 +16,7 @@ export const BUILDS: Readonly<Record<BuildName, BuildSettings>> = {
 };
 
 /** The app's background, in its theme-color, its manifest and `--paper` in shell.css. */
-export const PAPER = '#0b0d0d';
+export const PAPER = '#0b0f1d';
 
 export function buildName(value: string | undefined): BuildName {
   const name = value ?? 'public';

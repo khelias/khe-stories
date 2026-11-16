@@ -46,7 +46,7 @@
 
 /* khe-sites' dark family tokens, the ones this page reads. */
 :root {
-  --paper: #0b0d0d;
+  --paper: #0b0f1d;
   --surface: #121615;
   --sunken: #0f1211;
   --ink: #eef1f0;
@@ -67,7 +67,8 @@
   --khe-header-font: var(--sans);
   --khe-header-title-font: var(--serif);
   --khe-header-max-width: 1080px;
-  --khe-header-bg: var(--paper);
+  /* Transparent over the library's sky (estate ADR-032 point 3). */
+  --khe-header-bg: transparent;
   --khe-header-blur: 0px;
   --khe-header-border: var(--rule);
   --khe-header-text: var(--ink);
