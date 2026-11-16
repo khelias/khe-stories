@@ -43,6 +43,12 @@ worker deciding by URL). The content contract is
   places, and their pictures in `demo/art/`. Its audio is all rights
   reserved (README).
 - `e2e/server.ts` - serves a build as nginx will, for e2e and `preview`.
+- `reader/` - reads a story aloud (estate ADR-036): `read.py` the command,
+  `reading.py` the pieces and pauses, `xtts.py` the TTS run with its Whisper
+  and pitch checks, `pcm.py` silence and AAC, every package pinned in
+  `requirements.txt`. It holds no family content: the private repo passes the
+  voice clips, the subtitle and the Whisper prompt. The method is
+  [docs/reader.md](docs/reader.md).
 
 ## Commands
 
@@ -58,6 +64,12 @@ Node 26 (`.nvmrc`), npm.
   offline, Range, the worker's update and prune, resume, the listening view,
   the mini player, the sleep counter's chain, the family header's language).
 - `npm run preview` - serves `output/public` with the demo audio.
+- `python3 -m unittest discover -s reader -q` - the reader's tests.
+- `uv run --no-project --python 3.11 --with-requirements reader/requirements.txt python reader/read.py --help` -
+  the reader (docs/reader.md "Running it"): Apple silicon for mlx-whisper,
+  `uv`, and `afconvert` or `ffmpeg`. The private repo's export runs it; the
+  demo stories are not read with it, since the only voice with permission is
+  private.
 
 TypeScript is two packages on purpose, as in khe-trips: `@typescript/native`
 (TS 7) supplies `tsc`, and `typescript` is aliased to
@@ -85,6 +97,8 @@ Renovate automerges npm patch and minor updates of stable packages, 0.x
 patches of devDependencies, GitHub Actions minor and patch updates, digests,
 pins and lock file maintenance (`renovate.json`), through a pull request whose
 required checks pass; `@khelias/ui` is never automerged (estate ADR-014).
+Renovate leaves `reader/` alone (`ignorePaths`): its pins decide how a story
+sounds, so they move by hand, with a new voice tag in the private repo.
 Nothing here deploys: the private stories repo builds the commit its
 `app.ref` names. The way back from a bad update is to revert its merge on
 `main` through a pull request.
