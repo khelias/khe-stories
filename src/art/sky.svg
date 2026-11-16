@@ -1,0 +1,6 @@
+<svg class="art-sky" viewBox="0 0 340 200" preserveAspectRatio="xMidYMid slice" focusable="false" aria-hidden="true">
+  <path class="art-moon" d="M46 26a18 18 0 1 0 12 33A16 16 0 0 1 46 26z"/>
+  <circle class="art-star" cx="268" cy="40" r="2.2"/>
+  <circle class="art-star" cx="234" cy="72" r="1.7"/>
+  <circle class="art-star" cx="290" cy="112" r="1.7"/>
+</svg>

@@ -1,0 +1,148 @@
+/* The KHE family shell this app sits in: the package's header and footer, and what the page
+   took from khe-sites, restated here as khe-trips restates its own: the fonts, the family
+   tokens the room uses (khe-sites DESIGN.md), the header and footer values, and the base
+   rules of site.css the page relied on. Committed to the dark theme (estate ADR-021 point 2),
+   so only the dark values are kept. */
+@import '@khelias/ui/site-header.css';
+@import '@khelias/ui/site-footer.css';
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/inter-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/inter-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/inter-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/source-serif-4-600-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/source-serif-4-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* khe-sites' dark family tokens, the ones this page reads. */
+:root {
+  --paper: #0b0d0d;
+  --surface: #121615;
+  --sunken: #0f1211;
+  --ink: #eef1f0;
+  --ink-2: #c4cac7;
+  --muted: #8a928f;
+  --rule: #232827;
+  --rule-strong: #3a413f;
+  --stories: #f08cc0;
+  --serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Inter', system-ui, sans-serif;
+  --room: var(--stories);
+  --room-text: var(--stories);
+  color-scheme: dark;
+}
+
+/* The family header: opaque paper, one rule, no shadow. */
+.site-header {
+  --khe-header-font: var(--sans);
+  --khe-header-title-font: var(--serif);
+  --khe-header-max-width: 1080px;
+  --khe-header-bg: var(--paper);
+  --khe-header-blur: 0px;
+  --khe-header-border: var(--rule);
+  --khe-header-text: var(--ink);
+  --khe-header-text-muted: var(--muted);
+  --khe-header-focus: var(--room-text);
+
+  --khe-header-brand-radius: 8px;
+  --khe-header-brand-border: var(--rule-strong);
+  --khe-header-brand-border-hover: var(--muted);
+  --khe-header-brand-bg: var(--paper);
+  --khe-header-brand-shadow: none;
+  --khe-header-suffix: var(--room-text);
+
+  --khe-header-switcher-radius: 999px;
+  --khe-header-switcher-border: var(--rule);
+  --khe-header-switcher-bg: var(--surface);
+  --khe-header-button-radius: 999px;
+  --khe-header-button-pressed-text: var(--ink);
+  --khe-header-button-pressed-bg: var(--paper);
+  --khe-header-button-pressed-border: var(--rule-strong);
+
+  --khe-header-menu-bg: var(--surface);
+  --khe-header-menu-border: var(--rule-strong);
+  --khe-header-menu-shadow: 0 12px 32px rgb(0 0 0 / 0.14);
+  --khe-header-menu-current-bg: var(--sunken);
+
+  --khe-header-demo-bg: var(--sunken);
+  --press-opacity: 1;
+}
+
+.site-footer {
+  --khe-footer-font: var(--sans);
+  --khe-footer-text: var(--muted);
+  --khe-footer-text-hover: var(--ink);
+  --khe-footer-focus: var(--room-text);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  background: var(--paper);
+  -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button {
+  touch-action: manipulation;
+}
+
+/* With the tap highlight gone, a pressed link dims the way iOS text buttons do; controls
+   with their own press state opt out. */
+:where(a):active {
+  opacity: var(--press-opacity, 0.6);
+}
+
+:where(a, button, input):focus-visible {
+  outline: 2px solid var(--room-text);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+
+a { color: var(--ink-2); }
+@media (hover: hover) and (pointer: fine) {
+  a:hover { color: var(--ink); }
+}
+
+[hidden] { display: none !important; }

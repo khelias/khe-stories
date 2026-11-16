@@ -1,0 +1,35 @@
+{
+  "name": "khe-stories",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && STORIES_BUILD=public vite build && STORIES_BUILD=family vite build",
+    "preview": "node --experimental-strip-types e2e/server.ts",
+    "lint": "eslint . && khe-design-lint",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@khelias/ui": "0.6.0",
+    "workbox-range-requests": "^7.4.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6",
+    "@typescript/native": "npm:typescript@~7.0.2",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "typescript": "npm:@typescript/typescript6@~6.0.2",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}
