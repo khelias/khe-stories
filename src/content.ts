@@ -159,8 +159,10 @@ const ART_VIEWBOX = '0 0 600 800';
 const TAG = /<(\/?)([A-Za-z][A-Za-z0-9]*)((?:[ \t\r\n]+[A-Za-z][A-Za-z0-9-]*="[^"<>&]*")*)[ \t\r\n]*(\/?)>/y;
 const ATTRIBUTE = /([A-Za-z][A-Za-z0-9-]*)="([^"]*)"/g;
 // Numbers, colours, keywords and lists of them; parentheses only in a transform or a url().
-const PLAIN_VALUE = /^[A-Za-z0-9#.,%\s-]*$/;
-const TRANSFORM_VALUE = /^(?:\s*(?:matrix|translate|scale|rotate|skewX|skewY)\([0-9eE.,\s-]*\)\s*)+$/;
+const PLAIN_VALUE = /^[A-Za-z0-9#.,% \t\r\n-]*$/;
+// One separator run between functions, never two quantifiers over the same spaces, so a bad
+// value fails in linear time rather than backtracking through every split of its spaces.
+const TRANSFORM_VALUE = /^[ \t\r\n]*(?:(?:matrix|translate|scale|rotate|skewX|skewY)\([0-9eE., \t\r\n-]*\)[ \t\r\n,]*)+$/;
 const URL_VALUE = /^url\(#([A-Za-z][A-Za-z0-9_-]*)\)$/;
 const ID_VALUE = /^[A-Za-z][A-Za-z0-9_-]*$/;
 

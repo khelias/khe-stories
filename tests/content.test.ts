@@ -91,6 +91,13 @@ describe('checkArt', () => {
     }
   });
 
+  it('fails a long bad transform at once, not after backtracking', () => {
+    const value = `${Array.from({ length: 40 }, () => 'rotate(1)').join('          ')} x`;
+    const started = performance.now();
+    expect(() => { checkArt(SVG(`<g transform="${value}"></g>`), 'slow'); }).toThrow(ContentError);
+    expect(performance.now() - started).toBeLessThan(200);
+  });
+
   it('passes the allowed constructs', () => {
     expect(() => { checkArt(SVG(GOOD), 'good'); }).not.toThrow();
   });
