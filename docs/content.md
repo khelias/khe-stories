@@ -8,6 +8,7 @@ before anything is bundled, and a build fails on the first problem.
     <content>/
       catalog.json
       stories/<route>.json
+      art/<name>.svg            the pictures the catalog names
       audio/<sha256>.m4a        not read by the build; served beside it
 
 ## catalog.json
@@ -20,7 +21,7 @@ before anything is bundled, and a build fails on the first problem.
       "title": "Siil, kes otsis und",
       "told": "2026-01-10",
       "published": "2026-11-16",
-      "art": "default",
+      "art": "siil-otsis-und.svg",
       "duration": 98.181,
       "audio": "fe8b1fa7…"
     }
@@ -35,8 +36,10 @@ before anything is bundled, and a build fails on the first problem.
 - `told`: `YYYY-MM-DD`, or `YYYY-<spring|summer|autumn|winter>`.
 - `published`: the day the story was published, or `null`. The public build
   holds only stories with a date; the family build holds all.
-- `art`: a drawing key from `src/art.ts` (`sun`, `cone`, `default`); a key the
-  app does not know draws the default.
+- `art`: the story's picture, a file name under `art/` matching
+  `^[a-z0-9-]+\.svg$`, or absent (or `null`) to draw the app's fallback scene.
+  A name that does not match, or a file that is missing or fails the picture
+  rules below, fails the build.
 - `duration`: seconds of audio, or `null` for a story read as text only.
 - `audio`: the sha256 of the story's m4a, or `null` for text only. Both or
   neither of `duration` and `audio` are set.
@@ -60,6 +63,42 @@ The build writes each story file as a hashed asset
 (`assets/<route>-<hash>.json`), so a changed text is a new URL that no cache
 holds, and writes the build's own `catalog.json` beside `index.html` for the
 deploy and its leak check. The page itself takes the catalog from its bundle.
+
+## art/&lt;name&gt;.svg
+
+A story's picture (estate
+[ADR-033](https://github.com/khelias/khe-architecture/blob/main/decisions/033-story-pictures-are-content.md)):
+the library cover, the story page's header and the player's tile. The app
+draws it with `<img>`, never inline, and the build writes it as a hashed asset
+(`assets/<name>-<hash>.svg`) beside the story's JSON, so the service worker
+holds it offline. Only the pictures of the stories a build holds are in it.
+
+The files are served from the app's own origin, where an SVG opened by
+itself is a page, so `checkArt` in `src/content.ts` holds them to an
+allowlist, not a ban list:
+
+- At most 200 KB, one `<svg>` root with `viewBox="0 0 600 800"`; `xmlns`
+  only on the root and only the SVG namespace.
+- Elements: `svg defs g path rect circle ellipse line polyline polygon
+  linearGradient radialGradient stop clipPath filter feGaussianBlur`.
+- Attributes, by name: `id`, the geometry (`width height viewBox
+  preserveAspectRatio transform d x y x1 y1 x2 y2 cx cy r rx ry fx fy fr
+  points pathLength`), the paint (`fill fill-opacity fill-rule opacity
+  stroke stroke-width stroke-opacity stroke-linecap stroke-linejoin
+  stroke-dasharray stroke-dashoffset stroke-miterlimit`), the gradients
+  (`offset stop-color stop-opacity gradientUnits gradientTransform
+  spreadMethod`), clipping (`clip-path clip-rule clipPathUnits`) and the blur
+  (`filter filterUnits primitiveUnits stdDeviation in result edgeMode`).
+- Values are numbers, colours and keywords; `url(#id)` to an id in the same
+  file is the only reference, and parentheses appear otherwise only in a
+  transform.
+- No text, comment, DOCTYPE, entity, CDATA or processing instruction; so no
+  `style`, `href`, `on*`, `script`, `foreignObject`, `image`, `use` or
+  animation element.
+
+Composition: the frame is 600 by 800, and the app crops wide frames from the
+bottom (`object-position: 50% 100%`), so the subject stays between y 380 and
+780.
 
 ## Audio
 

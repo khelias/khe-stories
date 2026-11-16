@@ -34,7 +34,6 @@ body.stories-page {
   --text-dimmed: rgb(255 255 255 / 0.5);
   --art: #1b1733;
   --art-glow: #f2c46d;
-  --art-moon: #f2f0ea;
   --glass: rgb(40 40 44 / 0.62);
   --glass-edge: rgb(255 255 255 / 0.16);
   --player-space: 17.5rem;
@@ -51,8 +50,7 @@ body.stories-page {
   display: block;
 }
 
-.series-mark,
-.drawing {
+.series-mark {
   fill: none;
   stroke: var(--art-glow);
   stroke-linecap: round;
@@ -124,36 +122,20 @@ body.stories-page {
 }
 
 .story-art {
-  position: relative;
+  display: block;
   height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(110px circle at 50% var(--glow-y, 50%), rgb(242 196 109 / 0.34), rgb(242 196 109 / 0)) var(--art);
+  overflow: hidden;
+  background: var(--art);
 }
 
-[data-art="sun"] {
-  --art: #16292a;
-  --glow-y: 39%;
-}
-
-.art-sky {
-  position: absolute;
-  inset: 0;
+/* The subject sits low in the 600x800 frame (docs/content.md), so a wide crop keeps the bottom. */
+.story-art img,
+.player-tile img {
+  display: block;
   width: 100%;
   height: 100%;
-}
-
-.art-moon,
-.art-star {
-  fill: var(--art-moon);
-}
-
-.story-art .drawing {
-  position: relative;
-  width: 88px;
-  height: 110px;
-  stroke-width: 3.2;
+  object-fit: cover;
+  object-position: 50% 100%;
 }
 
 .story-card-body {
@@ -433,21 +415,9 @@ body.stories-page {
   grid-area: tile;
   width: 44px;
   height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   border-radius: 10px;
   background: var(--art);
-}
-
-.player-tile .drawing-fine {
-  display: none;
-}
-
-.player-tile .drawing {
-  width: 22px;
-  height: 28px;
-  stroke-width: 6;
 }
 
 .player-names {
@@ -695,16 +665,8 @@ body[data-no-audio] :is(.player, .story-credit) {
     background: var(--art);
   }
 
-  .art-sky,
-  .story-art .drawing-fine,
   .story-back {
     display: none;
-  }
-
-  .story-art .drawing {
-    width: 30px;
-    height: 38px;
-    stroke-width: 5;
   }
 
   .story-card[aria-current="true"] {
@@ -806,11 +768,6 @@ body[data-no-audio] :is(.player, .story-credit) {
     width: 52px;
     height: 52px;
     border-radius: 12px;
-  }
-
-  .player-tile .drawing {
-    width: 24px;
-    height: 30px;
   }
 
   .player-names {

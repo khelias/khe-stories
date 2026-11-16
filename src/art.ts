@@ -1,39 +1,26 @@
-// The card drawings, one per key a catalog entry may name; an unknown key draws the default.
-import cone from './art/cone.svg?raw';
-import fallback from './art/default.svg?raw';
-import sky from './art/sky.svg?raw';
-import sun from './art/sun.svg?raw';
+// A story's picture: its own file from the content (estate ADR-033), or the fallback night
+// scene. Always an <img>, never inline, so nothing in a file reaches the page.
+import fallback from './art/night.svg';
 
-interface Art {
-  readonly drawing: string;
-  /** The night sky behind it on the phone's large card. */
-  readonly sky: boolean;
+export function pictureImage(picture: string | null, loading: 'eager' | 'lazy' = 'eager'): HTMLImageElement {
+  const image = document.createElement('img');
+  image.loading = loading;
+  image.src = picture ?? fallback;
+  image.alt = '';
+  image.decoding = 'async';
+  return image;
 }
 
-const DEFAULT: Art = { drawing: fallback, sky: false };
-const ART: Readonly<Record<string, Art>> = { sun: { drawing: sun, sky: false }, cone: { drawing: cone, sky: true }, default: DEFAULT };
-
-const known = (key: string) => (Object.hasOwn(ART, key) ? key : 'default');
-
-/** Fills `span` with the drawing for `key` (the build's own SVG files, never content text),
- *  with the sky behind it where `withSky`. */
-function fill(span: HTMLElement, key: string, withSky: boolean): HTMLElement {
-  const id = known(key);
-  const art = ART[id] ?? DEFAULT;
-  span.dataset.art = id;
-  span.innerHTML = (withSky && art.sky ? sky : '') + art.drawing;
-  return span;
-}
-
-/** The card's art. */
-export function renderArt(key: string): HTMLElement {
+/** The card's picture. */
+export function renderArt(picture: string | null): HTMLElement {
   const span = document.createElement('span');
   span.className = 'story-art';
   span.setAttribute('aria-hidden', 'true');
-  return fill(span, key, true);
+  span.append(pictureImage(picture, 'lazy'));
+  return span;
 }
 
-/** The player's tile, drawn for `key`. */
-export function drawTile(tile: HTMLElement, key: string): void {
-  fill(tile, key, false);
+/** The player's tile, drawn with the open story's picture. */
+export function drawTile(tile: HTMLElement, picture: string | null): void {
+  tile.replaceChildren(pictureImage(picture));
 }

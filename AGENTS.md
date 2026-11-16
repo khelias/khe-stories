@@ -18,7 +18,11 @@ worker deciding by URL). The content contract is
 - `src/index.html` - the page; `build/chrome.ts` fills its markers per build.
 - `src/main.ts` starts `offline.ts` (the worker's registration and saving),
   `stories.ts` (library, reading view, player) and `locale.ts`.
-- `src/content.ts` - the contract's types and checks, shared with the build.
+- `src/content.ts` - the contract's types and checks, shared with the build,
+  `checkArt` among them: the allowlist every story picture passes
+  ([estate ADR-033](https://github.com/khelias/khe-architecture/blob/main/decisions/033-story-pictures-are-content.md)).
+- `src/art.ts` - a story's picture as an `<img>`; `src/art/night.svg` is the
+  fallback scene for a story without one.
 - `src/resume.ts` - where listening stopped, `unejanku:v1:pos:<route>`.
 - `src/sw.ts` - the service worker; `build/sw.ts` compiles it per build.
 - `src/shell.css` - the family shell restated; `src/stories.css` - the
@@ -29,7 +33,8 @@ worker deciding by URL). The content contract is
   stories.khe.ee, in the public build only
   ([estate ADR-034](https://github.com/khelias/khe-architecture/blob/main/decisions/034-the-demo-line-links-the-real-site.md)).
 - `demo/` - the demo content: invented stories, no family names, no real
-  places. Its audio is all rights reserved (README).
+  places, and their pictures in `demo/art/`. Its audio is all rights
+  reserved (README).
 - `e2e/server.ts` - serves a build as nginx will, for e2e and `preview`.
 
 ## Commands

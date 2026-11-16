@@ -11,6 +11,8 @@ import { localPositions, positionFor, savePosition, SAVE_EVERY_MS } from './resu
 export interface BuiltStory extends CatalogEntry {
   /** The URL of the story's JSON. */
   readonly data: string;
+  /** The URL of the story's picture, or null for the fallback scene. */
+  readonly picture: string | null;
 }
 
 interface Card {
@@ -44,7 +46,7 @@ function renderCard(entry: BuiltStory): Card {
   const card = document.createElement('a');
   card.className = 'story-card';
   card.href = `#${entry.route}`;
-  card.append(renderArt(entry.art));
+  card.append(renderArt(entry.picture));
   const body = document.createElement('span');
   body.className = 'story-card-body';
   const title = document.createElement('span');
@@ -309,7 +311,7 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
     saveError.hidden = true;
     document.querySelectorAll('[data-story-title]').forEach((node) => { node.textContent = entry.title; });
     items.forEach(({ card }) => { card.setAttribute('aria-current', String(card === item.card)); });
-    drawTile(tile, entry.art);
+    drawTile(tile, entry.picture);
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: entry.title,
