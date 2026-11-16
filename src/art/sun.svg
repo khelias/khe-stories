@@ -1,6 +1,0 @@
-<svg class="drawing" viewBox="0 0 96 120" focusable="false" aria-hidden="true">
-  <circle cx="48" cy="36" r="17"/>
-  <path d="M72 36h7M24 36h-7M48 12v-7M48 60v7M65 19l4.9-4.9M31 19l-4.9-4.9M65 53l4.9 4.9M31 53l-4.9 4.9"/>
-  <path d="M8 106q40-12 80 0"/>
-  <path class="drawing-fine" d="M28 101c-1-7-5-11-10-13M28 101V83M28 101c1-7 5-11 10-13M48 100c-1-7-5-11-10-13M48 100V82M48 100c1-7 5-11 10-13M68 101c-1-7-5-11-10-13M68 101V83M68 101c1-7 5-11 10-13"/>
-</svg>

@@ -126,6 +126,26 @@ describe('the public build', () => {
     }
     const built = JSON.parse(readFileSync(join(out, 'catalog.json'), 'utf8')) as { stories: unknown[] };
     expect(built.stories).toHaveLength(2);
+    const pictures = files(out).filter((path) => path.endsWith('.svg')).map((path) => readFileSync(path, 'utf8'));
+    const hiddenArt = readFileSync(join(content, 'art', `${hidden.route}.svg`), 'utf8');
+    expect(pictures).not.toContain(hiddenArt);
+    for (const shown of catalog.stories.filter((story) => story !== hidden)) {
+      expect(pictures).toContain(readFileSync(join(content, 'art', `${shown.route}.svg`), 'utf8'));
+    }
+  });
+
+  it.each([
+    ['a missing picture', (content: string) => { rmSync(join(content, 'art', 'siil-otsis-und.svg')); }, /does not exist/],
+    ['an unsafe picture', (content: string) => { writeFileSync(join(content, 'art', 'siil-otsis-und.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800"><script>alert(1)</script></svg>'); }, /script/],
+    ['a bad picture name', (content: string) => {
+      const path = join(content, 'catalog.json');
+      writeFileSync(path, readFileSync(path, 'utf8').replace('"siil-otsis-und.svg"', '"../siil.svg"'));
+    }, /art/],
+  ])('fails on %s', async (_, spoil, problem) => {
+    const content = tempDir('stories-content-');
+    cpSync('demo', content, { recursive: true });
+    spoil(content);
+    await expect(buildInto('public', content)).rejects.toThrow(problem);
   });
 });
 

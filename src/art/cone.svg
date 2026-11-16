@@ -1,8 +1,0 @@
-<svg class="drawing" viewBox="0 0 96 120" focusable="false" aria-hidden="true">
-  <path d="M48 14v-8"/>
-  <path d="M48 14c-17 0-26 20-26 44s11 50 26 50 26-26 26-50-9-44-26-44z"/>
-  <path d="M25 40q23 12 46 0"/>
-  <path d="M22 60q26 13 52 0"/>
-  <path d="M25 80q23 11 46 0"/>
-  <path class="drawing-fine" d="M34 98q14 6 28 0"/>
-</svg>
