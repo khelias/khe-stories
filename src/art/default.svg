@@ -1,0 +1,5 @@
+<svg class="drawing" viewBox="0 0 96 120" focusable="false" aria-hidden="true">
+  <path d="M58 18a30 30 0 1 0 22 50 26 26 0 0 1-22-50z"/>
+  <path d="M24 30v10M19 35h10"/>
+  <path class="drawing-fine" d="M10 106q38-10 76 0M30 96q18-5 36 0"/>
+</svg>

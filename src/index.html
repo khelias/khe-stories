@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="et" data-room="stories" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Unejänku</title>
+  <meta name="description" content="Unejutud jänkuperest, ette loetud.">
+  <!-- stories-head -->
+  <meta name="apple-mobile-web-app-title" content="Unejänku">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#0b0d0d">
+  <!-- site-view -->
+  <link rel="stylesheet" href="./shell.css">
+  <link rel="stylesheet" href="./stories.css">
+  <script type="module" src="./main.ts"></script>
+</head>
+<body class="stories-page" data-view="library">
+  <!-- site-header -->
+
+  <div class="stories-app">
+    <section class="library" aria-labelledby="series-title">
+      <div class="series" data-cards>
+        <div class="series-head">
+          <svg class="series-mark" aria-hidden="true" viewBox="0 0 104 120" focusable="false">
+            <path d="M38 62c-8-14-11-34-6-48 3-8 11-8 13 1 3 12 1 32-2 46"/>
+            <path d="M66 62c8-14 11-34 6-48-3-8-11-8-13 1-3 12-1 32 2 46"/>
+            <path d="M52 112c-19 0-30-10-30-25s13-27 30-27 30 12 30 27-11 25-30 25z"/>
+          </svg>
+          <div>
+            <h1 id="series-title" lang="et">Jänkujutud</h1>
+            <p class="series-note" data-i18n="seriesNote">Unejutud ühest jänkuperest</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="library-note" data-i18n="more">Uusi jutte tuleb siia aegamööda.</p>
+    </section>
+
+    <article class="story" aria-labelledby="story-title">
+      <a class="story-back" href="./" data-story-close>
+        <svg viewBox="0 0 22 22" aria-hidden="true" focusable="false"><path d="M13.5 4.5 7 11l6.5 6.5"/></svg>
+        <span lang="et" data-i18n="back">Jänkujutud</span>
+      </a>
+      <header class="story-head">
+        <h2 id="story-title" lang="et" data-story-title></h2>
+        <p class="story-length" data-story-length></p>
+      </header>
+      <p class="story-no-reading" data-i18n="noReading" data-story-no-reading hidden>Ettelugemist praegu ei ole.</p>
+      <div class="story-text" lang="et" data-story-text></div>
+      <div class="story-save" data-story-save hidden>
+        <button class="story-save-button" type="button" data-save-button>
+          <svg class="icon-save" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 3v9.5M6 9l4 4 4-4M4 16.5h12"/></svg>
+          <svg class="icon-saved" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4.5 10.5 8 14l7.5-8"/></svg>
+          <span data-save-label>Hoia telefonis</span>
+        </button>
+        <p class="story-save-error" data-i18n="saveFailed" data-save-error hidden>Salvestamine ei õnnestunud.</p>
+      </div>
+      <p class="story-credit" data-i18n-html="credit">Loeb kõnesüntees <a href="https://huggingface.co/cbentes/pocket-tts-estonian">Pocket TTS Estonian</a> issi hääle järgi.</p>
+    </article>
+  </div>
+
+  <section class="player" aria-label="Mängija" data-i18n-aria="playerLabel">
+    <span class="player-tile" aria-hidden="true" data-player-tile></span>
+    <span class="player-names">
+      <span class="player-title" lang="et" data-story-title></span>
+      <span class="player-series" lang="et">Jänkujutud</span>
+    </span>
+    <div class="player-track">
+      <span class="player-fill" data-player-fill></span>
+      <input class="player-seek" type="range" min="0" max="1" step="1" value="0" aria-label="Koht jutus" data-i18n-aria="seek" data-player-seek>
+    </div>
+    <div class="player-times">
+      <span data-player-elapsed>0:00</span>
+      <span class="player-left" data-player-left></span>
+      <span class="player-total" data-player-total></span>
+    </div>
+    <div class="player-controls">
+      <button class="player-skip" type="button" aria-label="15 sekundit tagasi" data-i18n-aria="back15" data-player-skip="-15">
+        <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path d="M6 14a8 8 0 1 0 2.4-5.7"/><path d="M8 4v4.5h4.5"/><text x="14" y="17.5">15</text></svg>
+      </button>
+      <button class="player-play" type="button" aria-label="Kuula" data-player-play>
+        <svg class="icon-play" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path d="M9 5.5v17a1.2 1.2 0 0 0 1.8 1l13-8.5a1.2 1.2 0 0 0 0-2l-13-8.5A1.2 1.2 0 0 0 9 5.5z"/></svg>
+        <svg class="icon-pause" viewBox="0 0 26 26" aria-hidden="true" focusable="false"><rect x="6" y="4" width="5" height="18" rx="1.5"/><rect x="15" y="4" width="5" height="18" rx="1.5"/></svg>
+      </button>
+      <button class="player-skip" type="button" aria-label="15 sekundit edasi" data-i18n-aria="forward15" data-player-skip="15">
+        <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path d="M22 14a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4.5h-4.5"/><text x="14" y="17.5">15</text></svg>
+      </button>
+    </div>
+    <p class="player-ai" data-i18n="aiVoice">Ette loeb tehisintellekti hääl.</p>
+  </section>
+  <audio preload="metadata" data-story-audio></audio>
+
+  <!-- site-footer -->
+</body>
+</html>

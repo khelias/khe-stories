@@ -1,0 +1,31 @@
+{
+  "stories": [
+    {
+      "route": "siil-otsis-und",
+      "title": "Siil, kes otsis und",
+      "told": "2026-01-10",
+      "published": "2026-11-16",
+      "art": "default",
+      "duration": 98.181,
+      "audio": "fe8b1fa767aedaa7051496901dc1ef3ae70c943e762ee46def7c100b793690a4"
+    },
+    {
+      "route": "vaike-vihmapilv",
+      "title": "Väike vihmapilv",
+      "told": "2026-03-02",
+      "published": "2026-11-16",
+      "art": "sun",
+      "duration": 36.699,
+      "audio": "817e8ed75a88b440716874d4318aed14ddd007e19961830fed8cdbd47d5bf778"
+    },
+    {
+      "route": "ookull-luges-tahti",
+      "title": "Öökull, kes luges tähti",
+      "told": "2026-05-20",
+      "published": "2026-11-16",
+      "art": "cone",
+      "duration": null,
+      "audio": null
+    }
+  ]
+}
