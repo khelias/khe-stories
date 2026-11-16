@@ -24,6 +24,10 @@ worker deciding by URL). The content contract is
 - `src/shell.css` - the family shell restated; `src/stories.css` - the
   room's own look, outside the design check (estate ADR-028 point 1).
 - `src/copy.ts` - every string, ET and EN.
+- `src/builds.ts` `siteLinks` - the links the `data-link` attributes name, set
+  per language by `locale.ts`; `family` is the demo line's link to
+  stories.khe.ee, in the public build only
+  ([estate ADR-034](https://github.com/khelias/khe-architecture/blob/main/decisions/034-the-demo-line-links-the-real-site.md)).
 - `demo/` - the demo content: invented stories, no family names, no real
   places. Its audio is all rights reserved (README).
 - `e2e/server.ts` - serves a build as nginx will, for e2e and `preview`.

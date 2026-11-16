@@ -24,8 +24,9 @@ export function buildName(value: string | undefined): BuildName {
   return name;
 }
 
-/** khe.ee's front page and privacy page as this build links them. */
+/** khe.ee's front page and privacy page as this build links them, and the family's own app. */
 export const siteLinks = (build: BuildName) => ({
   home: (locale: string) => `${BUILDS[build].site}/?lang=${locale}`,
   privacy: (locale: string) => `${BUILDS[build].site}/privacy?lang=${locale}`,
+  family: (locale: string) => `https://stories.khe.ee/?lang=${locale}`,
 });

@@ -61,7 +61,9 @@ function header(build: BuildName, indent: string): string {
     brand: { href: siteLinks(build).home('et'), label: et(homeKey) },
     rooms: frame ? { current: 'stories', locale: 'et' } : undefined,
     context: { title: et('appName') },
-    demo: frame ? { label: et('headerDemo'), note: et('headerDemoNoteStories') } : undefined,
+    demo: frame
+      ? { label: et('headerDemo'), note: et('headerDemoNoteStories'), link: { href: siteLinks(build).family('et'), label: et('headerDemoLink') } }
+      : undefined,
     product: frame ? { root: base } : undefined,
     locales: [
       { code: 'et', label: 'ET' },
@@ -73,7 +75,11 @@ function header(build: BuildName, indent: string): string {
     attrs: {
       brand: { 'data-link': 'home', 'data-i18n-aria': homeKey },
       title: { 'data-i18n': 'appName' },
-      ...(frame && { demoLabel: { 'data-i18n': 'headerDemo' }, demoText: { 'data-i18n': 'headerDemoNoteStories' } }),
+      ...(frame && {
+        demoLabel: { 'data-i18n': 'headerDemo' },
+        demoText: { 'data-i18n': 'headerDemoNoteStories' },
+        demoLink: { 'data-i18n': 'headerDemoLink', 'data-link': 'family' },
+      }),
       switcher: { 'data-i18n-aria': 'headerLanguage' },
     },
   });
