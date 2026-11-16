@@ -13,7 +13,7 @@ interface Art {
 const DEFAULT: Art = { drawing: fallback, sky: false };
 const ART: Readonly<Record<string, Art>> = { sun: { drawing: sun, sky: false }, cone: { drawing: cone, sky: true }, default: DEFAULT };
 
-const known = (key: string) => (key in ART ? key : 'default');
+const known = (key: string) => (Object.hasOwn(ART, key) ? key : 'default');
 
 /** Fills `span` with the drawing for `key` (the build's own SVG files, never content text),
  *  with the sky behind it where `withSky`. */

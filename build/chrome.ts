@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-import { renderSiteHeader } from '@khelias/ui/site-header';
+import { escapeHtml, renderSiteHeader } from '@khelias/ui/site-header';
 import { renderSiteFooter } from '@khelias/ui/site-footer';
 import { viewInitScript } from '@khelias/ui/view';
 import { BUILDS, PAPER, siteLinks } from '../src/builds.ts';
@@ -14,6 +14,8 @@ const ANALYTICS_TOKEN = '58734ed4ae1e4b4e8a8f8f7d50ff74f2';
 export const MARKERS = ['stories-head', 'site-view', 'site-header', 'site-footer'] as const;
 
 const et = (key: CopyKey): string => COPY.et[key];
+/** The same, for an attribute value or text in the head. */
+const etHtml = (key: CopyKey): string => escapeHtml(et(key));
 
 function head(build: BuildName): string {
   const { base, frame } = BUILDS[build];
@@ -38,14 +40,14 @@ function head(build: BuildName): string {
     '<meta property="og:type" content="website">',
     `<meta property="og:url" content="${PUBLIC_URL}">`,
     '<meta property="og:site_name" content="Kaido Henrik Elias">',
-    `<meta property="og:title" content="${et('title')}">`,
-    `<meta property="og:description" content="${et('description')}">`,
+    `<meta property="og:title" content="${etHtml('title')}">`,
+    `<meta property="og:description" content="${etHtml('description')}">`,
     '<meta property="og:image" content="https://khe.ee/og-image.png">',
     '<meta property="og:image:width" content="1200">',
     '<meta property="og:image:height" content="630">',
     '<meta name="twitter:card" content="summary">',
-    `<meta name="twitter:title" content="${et('title')}">`,
-    `<meta name="twitter:description" content="${et('description')}">`,
+    `<meta name="twitter:title" content="${etHtml('title')}">`,
+    `<meta name="twitter:description" content="${etHtml('description')}">`,
     '<meta name="twitter:image" content="https://khe.ee/og-image.png">',
     // The consent banner from the origin root, as every khe.ee page loads it (estate ADR-019).
     `<script vite-ignore defer src="/assets/analytics-consent.js" data-analytics-token="${ANALYTICS_TOKEN}" data-analytics-privacy-url="/privacy?lang=et"></script>`,
