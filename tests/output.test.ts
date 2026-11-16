@@ -108,6 +108,11 @@ describe('the public build', () => {
     expect(html()).toContain('data-khe-room="stories"');
   });
 
+  it('links the family build from the demo line, in the page\'s language (estate ADR-034)', () => {
+    expect(count(html(), /class="site-header__demo-link"/g)).toBe(1);
+    expect(html()).toMatch(/<a class="site-header__demo-link" href="https:\/\/stories\.khe\.ee\/\?lang=et" data-i18n="headerDemoLink" data-link="family">Perele →<\/a>/);
+  });
+
   it('holds no story the catalog has not published', async () => {
     const content = tempDir('stories-content-');
     cpSync('demo', content, { recursive: true });
@@ -157,6 +162,7 @@ describe('the family build', () => {
     expect(html()).not.toMatch(/analytics-consent|cloudflareinsights|khe-view:/);
     expect(html()).not.toContain('site-header__rooms');
     expect(html()).not.toContain('site-header__demo');
+    expect(html()).not.toContain('stories.khe.ee');
     expect(html()).toContain('<meta name="robots" content="noindex, nofollow">');
     expect(readFileSync(join(outputs.family, 'robots.txt'), 'utf8')).toContain('Disallow: /');
   });
