@@ -23,5 +23,6 @@ conventions in [AGENTS.md](AGENTS.md).
 
 The code is MIT-licensed ([LICENSE](LICENSE)). The demo audio in `demo/audio/`
 is not: it is read by Pocket TTS Estonian in a voice cloned, with permission,
-from the children's dad reading aloud, the same voice as on khe.ee/stories, and
-all rights to it are reserved.
+from the children's dad reading aloud, and all rights to it are reserved. The
+real stories are read by TartuNLP XTTS v2 in his voice, which the app's credit
+line names, with its licence.
