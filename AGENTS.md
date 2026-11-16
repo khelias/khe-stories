@@ -60,6 +60,18 @@ yet.
    as if there were no worker; only a listener's tap puts audio in the cache.
 4. **Strings** are in `src/copy.ts` in both languages, in correct Estonian.
 
+## Automated writers
+
+Automated writers
+([estate ADR-007](https://github.com/khelias/khe-architecture/blob/main/decisions/007-automated-writers.md)):
+Renovate automerges npm patch and minor updates of stable packages, 0.x
+patches of devDependencies, GitHub Actions minor and patch updates, digests,
+pins and lock file maintenance (`renovate.json`), through a pull request whose
+required checks pass; `@khelias/ui` is never automerged (estate ADR-014).
+Nothing here deploys: the private stories repo builds the commit its
+`app.ref` names. The way back from a bad update is to revert its merge on
+`main` through a pull request.
+
 ## Kill-switch
 
 If a deployed worker misbehaves, replace `sw.js` in the build's output with

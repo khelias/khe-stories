@@ -96,7 +96,7 @@ test('an update without a story removes its text and saved audio', async ({ page
     buildE2e(content);
     await page.goto('/stories/');
     const oldShell = before.find(isShellCache);
-    // The page reloads itself under the new worker, so a poll may land mid-navigation.
+    // A poll may land while the new worker takes over and the page navigates.
     const shells = async () => {
       try {
         return (await page.evaluate(() => caches.keys())).filter(isShellCache);
