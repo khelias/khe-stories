@@ -8,9 +8,14 @@ import { createPartialResponse } from 'workbox-range-requests';
 import type { Notice } from '../server/contract.ts';
 import { ROUTE } from './content.ts';
 import { COPY } from './copy.ts';
+import { shownNotices } from './notices.ts';
 import { AUDIO_PREFIX, COMPOSE_HASH, SAVED_PREFIX, audioCacheName, audioUrl, isShellCache, keepable, shaUnder, shellCacheName } from './offline-names.ts';
 
 declare const self: ServiceWorkerGlobalScope;
+declare global {
+  // Not in TypeScript's lib yet; Chrome and Firefox take it.
+  interface NotificationOptions { renotify?: boolean }
+}
 declare const __SW_VERSION__: string;
 declare const __SW_BASE__: string;
 declare const __SW_BUILD__: 'public' | 'family';
@@ -130,20 +135,19 @@ async function showNotices(): Promise<void> {
   } catch {
     // Offline or refused: the generic notice below still says something is new.
   }
+  const shown = shownNotices(notices, copy);
   // A push the user can see must show a notification, so an empty answer shows a generic one.
-  if (!notices.length) {
+  if (!shown.length) {
     await self.registration.showNotification(copy.noticeOther, { icon: `${BASE}icon-180.png`, data: { route: null } });
     return;
   }
-  await Promise.all(notices.map((notice) => self.registration.showNotification(
-    notice.kind === 'ready' ? copy.noticeReady : copy.noticeFailed,
-    {
-      body: notice.kind === 'ready' ? (notice.title ?? '') : copy.noticeFailedBody,
-      icon: `${BASE}icon-180.png`,
-      tag: notice.route ?? notice.kind,
-      data: { route: notice.kind === 'ready' ? notice.route : null },
-    },
-  )));
+  await Promise.all(shown.map((each) => self.registration.showNotification(each.title, {
+    body: each.body,
+    icon: `${BASE}icon-180.png`,
+    tag: each.tag,
+    renotify: true,
+    data: { route: each.route },
+  })));
 }
 
 self.addEventListener('push', (event) => {

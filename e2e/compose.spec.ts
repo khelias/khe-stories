@@ -74,7 +74,7 @@ test('a parent pairs the phone, then the child sends her own story and sees it w
   await form.locator('textarea').fill('Konn läks tiigi äärde ja hakkas laulma.');
   await form.getByRole('button', { name: 'Saada' }).click();
 
-  await expect(page.locator('.compose-sent-note')).toHaveText('Jutt valmib, see võtab umbes 35 minutit.');
+  await expect(page.locator('.compose-sent-note')).toHaveText('Jutt valmib umbes 35 minutiga. Teksti saad lugeda juba varem.');
   await expect(page.locator('.compose-recent li')).toHaveText(['Naljakas juttOotab järjekorras']);
   expect(state.bodies).toEqual([{ mode: 'oma', kind: 'naljakas', text: 'Konn läks tiigi äärde ja hakkas laulma.' }]);
   await shoot(page, 'compose-sent');
@@ -102,13 +102,25 @@ test('an idea carries its cast, place and kind, and a cap says when to come back
   expect(state.bodies).toEqual([{ mode: 'idee', kind: 'seiklus', place: 'tiik', cast: ['konn', 'siil'], text: 'Konn ja siil ehitavad parve.' }]);
 });
 
-test('a finished request links to its story on the shelf', async ({ page }) => {
+test('a request on the shelf links to its story, with or without its reading', async ({ page }) => {
   const state = await stubApi(page);
   state.paired = true;
-  state.requests.push({ id: 'a1', state: 'ready', mode: 'idee', kind: 'seiklus', title: 'Konn tahtis lennata', route: 'konn-tahtis-lennata' });
+  const story = { mode: 'idee', kind: 'seiklus', title: 'Konn tahtis lennata', route: 'konn-tahtis-lennata' };
+  state.requests.push(
+    { id: 'a1', state: 'committed', mode: 'oma', kind: 'naljakas', title: null, route: null },
+    { id: 'a2', state: 'ready', ...story },
+    { id: 'a3', state: 'read', ...story },
+    { id: 'a4', state: 'silent', ...story },
+  );
   await page.goto(`${FAMILY_URL}/#uus-jutt`);
-  const link = page.locator('.compose-recent a');
-  await expect(link).toHaveText('Konn tahtis lennata');
-  await link.click();
+  await expect(page.locator('.compose-recent li')).toHaveText([
+    'Naljakas juttKohe riiulil',
+    'Konn tahtis lennataRiiulil, ettelugemine tuleb',
+    'Konn tahtis lennataRiiulil',
+    'Konn tahtis lennataRiiulil, ettelugemiseta',
+  ]);
+  await expect(page.locator('.compose-recent a')).toHaveCount(3);
+  await shoot(page, 'compose-recent');
+  await page.locator('.compose-recent a').first().click();
   await expect(page.locator('body')).toHaveAttribute('data-view', 'story');
 });
