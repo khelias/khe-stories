@@ -46,6 +46,9 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Reader tests
+        run: python3 -m unittest discover -s reader -q
+
       # Both builds over demo/.
       - name: Build
         run: npm run build
