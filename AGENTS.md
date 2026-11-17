@@ -60,8 +60,10 @@ worker deciding by URL). The content contract is
   ([estate ADR-038](https://github.com/khelias/khe-architecture/blob/main/decisions/038-a-childs-device-is-paired-once-by-a-parent.md)),
   `push.ts` Web Push, `outbound.ts` GitHub and Gemini, `contract.ts` the
   limits and states the page and the worker share with it, `notify.ts` the
-  command the stories job and the operator run in its container. A story is
-  ready once the family build's `catalog.json`, mounted read-only, lists it.
+  command the stories job and the operator run in its container. A story's
+  text is on the shelf once the family build's `catalog.json`, mounted
+  read-only, lists it, and its reading once the entry has audio; the next
+  request starts only after that.
   Its settings are in `server/.env.example`; the family's names and phrase
   are only in the homelab's `.env`.
 - `reader/` - reads a story aloud (estate ADR-036): `read.py` the command,

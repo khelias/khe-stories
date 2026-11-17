@@ -137,7 +137,7 @@ const routes: Record<string, Route> = {
   'GET /api/requests': (call) => {
     const { child } = device(call);
     return {
-      requests: call.deps.store.recent(child).map((r) => ({ id: r.id, state: r.state, mode: r.mode, kind: r.kind, title: r.title, route: r.route, created: r.created })),
+      requests: call.deps.store.recent(child).map((r) => ({ id: r.id, state: r.state === 'committed-silent' ? 'committed' : r.state, mode: r.mode, kind: r.kind, title: r.title, route: r.route, created: r.created })),
     };
   },
 

@@ -57,7 +57,11 @@ let server: Server;
 let base = '';
 const logs: string[] = [];
 const catalogPath = join(mkdtempSync(join(tmpdir(), 'stories-catalog-')), 'catalog.json');
-const deploy = (stories: { route: string; title: string }[]) => { writeFileSync(catalogPath, JSON.stringify({ stories })); };
+/** The family build's catalog as the deploy leaves it; `audio` is null until the reading is on the shelf. */
+const deploy = (stories: { route: string; title: string; audio?: string | null }[]) => {
+  writeFileSync(catalogPath, JSON.stringify({ stories: stories.map((story) => ({ audio: null, ...story })) }));
+};
+const SHA = 'a'.repeat(64);
 
 function config(overrides: Record<string, string> = {}): Config {
   return readConfig({
@@ -327,6 +331,94 @@ describe('reports, the deploy and notices', () => {
     expect((await call('GET', '/api/notices', undefined, cookie)).json).toEqual({ notices: [] });
   });
 
+  const kinds = () => deps.store.db.prepare('SELECT kind FROM notices ORDER BY id').all().map((row) => (row as { kind: string }).kind);
+
+  it('tells the child when the text is on the shelf, and again when the reading is', async () => {
+    const { id, cookie } = await running();
+    await report(deps, id, 'committed', 'janes-ja-siil');
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil' }]);
+    await tick(deps);
+    expect(deps.store.request(id)?.state).toBe('ready');
+    expect((await call('GET', '/api/requests', undefined, cookie)).json.requests).toMatchObject([{ state: 'ready', route: 'janes-ja-siil' }]);
+    await tick(deps);
+    expect(kinds()).toEqual(['ready']);
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil', audio: SHA }]);
+    await tick(deps);
+    expect(deps.store.request(id)?.state).toBe('read');
+    expect(kinds()).toEqual(['ready', 'read']);
+    expect(outside.calls.filter((c) => c.url === PUSH)).toHaveLength(2);
+    expect((await call('GET', '/api/notices', undefined, cookie)).json).toEqual({ notices: [
+      { kind: 'ready', route: 'janes-ja-siil', title: 'Jänes ja siil' },
+      { kind: 'read', route: 'janes-ja-siil', title: 'Jänes ja siil' },
+    ] });
+  });
+
+  it('sends one notice when the first catalog already has the reading', async () => {
+    const { id } = await running();
+    await report(deps, id, 'committed', 'janes-ja-siil');
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil', audio: SHA }]);
+    await tick(deps);
+    expect(deps.store.request(id)?.state).toBe('read');
+    expect(kinds()).toEqual(['read']);
+  });
+
+  it('ends silent, with no notice, when the reading fails after the text is on the shelf', async () => {
+    const { id } = await running();
+    await report(deps, id, 'committed', 'janes-ja-siil');
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil' }]);
+    await tick(deps);
+    expect(await run([id, 'silent'], () => deps, () => '')).toBe(0);
+    expect(deps.store.request(id)?.state).toBe('silent');
+    expect(kinds()).toEqual(['ready']);
+  });
+
+  it('still tells the child about the text when the reading fails before its deploy', async () => {
+    const { id, cookie } = await running();
+    await report(deps, id, 'committed', 'janes-ja-siil');
+    expect(await report(deps, id, 'silent', null)).toBe(true);
+    expect((await call('GET', '/api/requests', undefined, cookie)).json.requests).toMatchObject([{ state: 'committed' }]);
+    expect(kinds()).toEqual([]);
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil' }]);
+    await tick(deps);
+    expect(deps.store.request(id)).toMatchObject({ state: 'silent', title: 'Jänes ja siil' });
+    expect(kinds()).toEqual(['ready']);
+  });
+
+  it('ends silent when the reading never comes, and ignores silent for a running request', async () => {
+    const { id } = await running();
+    expect(await report(deps, id, 'silent', null)).toBe(false);
+    await report(deps, id, 'committed', 'janes-ja-siil');
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil' }]);
+    await tick(deps);
+    clock += 271 * 60_000;
+    await tick(deps);
+    expect(deps.store.request(id)?.state).toBe('silent');
+    expect(kinds()).toEqual(['ready']);
+  });
+
+  it('starts the next request only when the last one has its reading', async () => {
+    const { id, cookie } = await running();
+    await call('POST', '/api/requests', story, cookie);
+    await report(deps, id, 'committed', 'janes-ja-siil');
+    await tick(deps);
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil' }]);
+    await tick(deps);
+    expect(deps.store.request(id)?.state).toBe('ready');
+    expect(outside.to('/dispatches')).toHaveLength(1);
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil', audio: SHA }]);
+    await tick(deps);
+    await tick(deps);
+    expect(outside.to('/dispatches')).toHaveLength(2);
+  });
+
+  it('counts a story whose reading is coming as ahead of a new request', async () => {
+    const { id, cookie } = await running();
+    await report(deps, id, 'committed', 'janes-ja-siil');
+    deploy([{ route: 'janes-ja-siil', title: 'Jänes ja siil' }]);
+    await tick(deps);
+    expect((await call('POST', '/api/requests', story, cookie)).json).toMatchObject({ minutes: 2 * deps.config.minutesPerStory });
+  });
+
   it('tells the child at once when the job failed, and drops a subscription that is gone', async () => {
     const { id } = await running();
     outside.pushStatus = 410;
@@ -389,6 +481,20 @@ describe('reports, the deploy and notices', () => {
     expect(claims).toMatchObject({ aud: 'https://web.push.apple.com', sub: 'mailto:stories@example.org' });
     expect(Buffer.from(token.split('.')[2] ?? '', 'base64url')).toHaveLength(64);
   });
+});
+
+it('reads a story that was ready before the reading came apart as read', () => {
+  const path = join(mkdtempSync(join(tmpdir(), 'stories-db-')), 'state.db');
+  const old = new Store(path);
+  old.db.exec("PRAGMA user_version = 0; INSERT INTO requests (id, device, child, mode, kind, place, \"cast\", text, state, created) VALUES ('r1', 'd1', 'Anni', 'idee', 'seiklus', '', '', '', 'ready', 0)");
+  old.db.close();
+  const store = new Store(path);
+  expect(store.request('r1')?.state).toBe('read');
+  store.db.exec("UPDATE requests SET state = 'ready'");
+  store.db.close();
+  const again = new Store(path);
+  expect(again.request('r1')?.state).toBe('ready');
+  again.db.close();
 });
 
 it('answers the health check without a cookie', async () => {

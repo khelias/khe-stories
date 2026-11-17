@@ -4,6 +4,12 @@
 import { DatabaseSync } from 'node:sqlite';
 import type { Notice, RequestState } from './contract.ts';
 
+/**
+ * The states as stored: `committed-silent` is a committed story whose reading has already
+ * failed, waiting for its text to be listed; the page sees it as `committed`.
+ */
+export type StoredState = RequestState | 'committed-silent';
+
 export interface Device {
   readonly id: string;
   readonly child: string;
@@ -20,7 +26,7 @@ export interface StoryRequest {
   readonly place: string;
   readonly cast: string;
   readonly text: string;
-  readonly state: RequestState;
+  readonly state: StoredState;
   readonly route: string | null;
   readonly title: string | null;
   readonly created: number;
@@ -48,6 +54,14 @@ export class Store {
     this.db = new DatabaseSync(path);
     this.db.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;');
     this.db.exec(SCHEMA);
+    this.migrate();
+  }
+
+  /** Before version 1 a `ready` story had its reading too; that is `read` now. */
+  private migrate(): void {
+    const { user_version: version } = this.db.prepare('PRAGMA user_version').get() as { user_version: number };
+    if (version >= 1) return;
+    this.db.exec("UPDATE requests SET state = 'read' WHERE state = 'ready'; PRAGMA user_version = 1;");
   }
 
   addDevice(id: string, tokenHash: string, child: string, now: number): void {
@@ -101,7 +115,7 @@ export class Store {
   }
 
   /** The oldest request in `state`. */
-  first(state: RequestState): StoryRequest | null {
+  first(state: StoredState): StoryRequest | null {
     return (this.db.prepare('SELECT * FROM requests WHERE state = ? ORDER BY created LIMIT 1').get(state) as StoryRequest | undefined) ?? null;
   }
 
@@ -109,7 +123,7 @@ export class Store {
     return this.db.prepare('SELECT * FROM requests WHERE child = ? ORDER BY created DESC LIMIT ?').all(child, limit) as unknown as StoryRequest[];
   }
 
-  inState(state: RequestState): StoryRequest[] {
+  inState(state: StoredState): StoryRequest[] {
     return this.db.prepare('SELECT * FROM requests WHERE state = ? ORDER BY created').all(state) as unknown as StoryRequest[];
   }
 
@@ -121,8 +135,9 @@ export class Store {
     return Number((row as { n: number }).n);
   }
 
+  /** Requests ahead of a new one: queued, running, or on their way to the shelf with their reading. */
   waiting(): number {
-    return Number((this.db.prepare("SELECT COUNT(*) AS n FROM requests WHERE state IN ('queued', 'running')").get() as { n: number }).n);
+    return Number((this.db.prepare("SELECT COUNT(*) AS n FROM requests WHERE state IN ('queued', 'running', 'committed', 'committed-silent', 'ready')").get() as { n: number }).n);
   }
 
   dispatched(id: string, now: number): void {
@@ -134,7 +149,7 @@ export class Store {
    * cannot overwrite each other; false when it had already moved. Once it is done its words
    * are no longer kept.
    */
-  finish(id: string, from: readonly RequestState[], state: 'committed' | 'ready' | 'failed', fields: { route?: string | null; title?: string | null } = {}): boolean {
+  finish(id: string, from: readonly StoredState[], state: Exclude<StoredState, 'queued' | 'running'>, fields: { route?: string | null; title?: string | null } = {}): boolean {
     const result = this.db.prepare(`UPDATE requests SET state = ?, route = COALESCE(?, route), title = COALESCE(?, title), text = '' WHERE id = ? AND state IN (${from.map(() => '?').join(', ')})`)
       .run(state, fields.route ?? null, fields.title ?? null, id, ...from);
     return Number(result.changes) > 0;

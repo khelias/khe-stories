@@ -64,3 +64,8 @@ time, a few devices and their push subscriptions.
 - A notification says only that something is new; what it says comes from
   the service, so it can name the story without a payload crossing the push
   service.
+- A story is told twice: a notice when its text is on the shelf ("Sinu jutt
+  on riiulil", the reading coming soon) and one when its reading is
+  ("Ettelugemine on valmis"), the second replacing the first on the phone. A
+  reading that never comes ends the request `silent`, with no notice
+  (estate ADR-037 point 2).
