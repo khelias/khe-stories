@@ -17,7 +17,7 @@
     "node": ">=24"
   },
   "dependencies": {
-    "@khelias/ui": "0.7.0",
+    "@khelias/ui": "0.7.1",
     "workbox-range-requests": "^7.4.1"
   },
   "devDependencies": {
