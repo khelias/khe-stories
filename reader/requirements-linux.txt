@@ -1,0 +1,525 @@
+# Every package the reader (reader/*.py) runs with, for Python 3.11 on Linux x86_64, CPU only (faster-whisper).
+# torch and torchaudio come from PyTorch's CPU wheels by URL: the PyPI wheel brings CUDA, which fills a runner's disk.
+# numpy<2 because spacy<3.8 (the fork's bound) is built against numpy 1.
+# Made with: uv pip compile xtts-in.txt --python-version 3.11 --python-platform x86_64-manylinux_2_28 --torch-backend cpu --no-header,
+# then the two torch pins replaced by their wheel URLs; xtts-in.txt being:
+#   torch==2.15.0
+#   torchaudio
+#   transformers==4.46.2
+#   tokenizers==0.20.1
+#   coqpit-config>=0.1.1,<0.2.0
+#   coqui-tts-trainer>=0.2.0,<0.3.0
+#   gruut==2.4.0
+#   spacy>=3,<3.8
+#   num2words
+#   inflect
+#   anyascii
+#   pysbd
+#   librosa
+#   soundfile
+#   scipy
+#   einops
+#   jieba
+#   pypinyin
+#   hangul_romanize
+#   jamo
+#   g2pkk
+#   bangla
+#   bnnumerizer
+#   bnunicodenormalizer
+#   cutlet
+#   mecab-python3
+#   unidic-lite==1.0.8
+#   encodec
+#   huggingface_hub
+#   tts_preprocess_et @ git+https://github.com/TartuNLP/tts_preprocess_et.git@v1.0.1
+#   numpy<2
+#   faster-whisper==1.2.1
+absl-py==2.5.1
+    # via tensorboard
+annotated-doc==0.0.6
+    # via typer
+annotated-types==0.8.0
+    # via pydantic
+anyascii==0.3.3
+    # via -r xtts-in-linux.txt
+asttokens==3.0.2
+    # via stack-data
+audioread==3.1.0
+    # via librosa
+av==18.1.0
+    # via faster-whisper
+babel==2.18.0
+    # via gruut
+bangla==0.0.6
+    # via -r xtts-in-linux.txt
+beautifulsoup4==4.15.0
+    # via bs4
+blis==0.7.11
+    # via thinc
+bnnumerizer==0.0.2
+    # via -r xtts-in-linux.txt
+bnunicodenormalizer==0.1.7
+    # via -r xtts-in-linux.txt
+bs4==0.0.2
+    # via estnltk
+cached-property==2.0.1
+    # via estnltk
+catalogue==2.0.10
+    # via
+    #   spacy
+    #   srsly
+    #   thinc
+certifi==2026.10.23
+    # via requests
+cffi==2.1.1
+    # via soundfile
+charset-normalizer==3.5.2
+    # via requests
+click==8.5.1
+    # via nltk
+cloudpathlib==0.26.0
+    # via weasel
+cloudpickle==3.1.2
+    # via joblib
+confection==0.1.5
+    # via
+    #   thinc
+    #   weasel
+conllu==6.1.1
+    # via estnltk
+contourpy==1.3.3
+    # via matplotlib
+coqpit-config==0.1.2
+    # via
+    #   -r xtts-in-linux.txt
+    #   coqui-tts-trainer
+coqui-tts-trainer==0.2.2
+    # via -r xtts-in-linux.txt
+ctranslate2==4.9.0
+    # via faster-whisper
+cutlet==0.5.2
+    # via -r xtts-in-linux.txt
+cycler==0.12.1
+    # via matplotlib
+cymem==2.0.16
+    # via
+    #   preshed
+    #   spacy
+    #   thinc
+dateparser==1.1.8
+    # via gruut
+decorator==5.3.1
+    # via librosa
+defusedxml==0.7.1
+    # via nltk
+docopt==0.6.2
+    # via num2words
+einops==0.8.2
+    # via
+    #   -r xtts-in-linux.txt
+    #   encodec
+encodec==0.1.1
+    # via -r xtts-in-linux.txt
+estnltk==1.7.5
+    # via tts-preprocess-et
+estnltk-core==1.7.5
+    # via estnltk
+executing==2.3.0
+    # via stack-data
+faster-whisper==1.2.1
+    # via -r xtts-in-linux.txt
+filelock==4.2.11
+    # via
+    #   huggingface-hub
+    #   torch
+    #   transformers
+flatbuffers==25.12.19
+    # via onnxruntime
+fonttools==4.68.0
+    # via matplotlib
+fsspec==2026.9.0
+    # via
+    #   coqui-tts-trainer
+    #   huggingface-hub
+    #   torch
+fugashi==1.5.2
+    # via cutlet
+g2pkk==0.1.2
+    # via -r xtts-in-linux.txt
+grpcio==1.85.1
+    # via tensorboard
+gruut==2.4.0
+    # via -r xtts-in-linux.txt
+gruut-ipa==0.13.0
+    # via gruut
+gruut-lang-en==2.0.1
+    # via gruut
+hangul-romanize==0.1.0
+    # via -r xtts-in-linux.txt
+hf-xet==1.8.0
+    # via huggingface-hub
+html5lib==1.1
+    # via estnltk
+huggingface-hub==0.36.2
+    # via
+    #   -r xtts-in-linux.txt
+    #   faster-whisper
+    #   tokenizers
+    #   transformers
+idna==3.20
+    # via requests
+inflect==7.6.0
+    # via -r xtts-in-linux.txt
+ipython==9.18.1
+    # via estnltk
+ipython-pygments-lexers==1.1.1
+    # via ipython
+jaconv==0.5.0
+    # via cutlet
+jamo==0.4.1
+    # via
+    #   -r xtts-in-linux.txt
+    #   g2pkk
+jaraco-functools==4.6.0
+    # via inflect
+jedi==0.20.1
+    # via ipython
+jieba==0.42.1
+    # via -r xtts-in-linux.txt
+jinja2==3.1.6
+    # via
+    #   spacy
+    #   torch
+joblib==1.6.0
+    # via
+    #   librosa
+    #   nltk
+    #   scikit-learn
+jsonlines==1.2.0
+    # via gruut
+kiwisolver==1.5.1
+    # via matplotlib
+langcodes==3.5.1
+    # via spacy
+lazy-loader==0.6
+    # via librosa
+librosa==0.11.0
+    # via -r xtts-in-linux.txt
+llvmlite==0.50.0
+    # via numba
+lxml==6.1.3
+    # via estnltk
+markdown==3.11.3
+    # via tensorboard
+markdown-it-py==4.3.0
+    # via rich
+markupsafe==3.0.4
+    # via
+    #   jinja2
+    #   werkzeug
+matplotlib==3.11.2
+    # via estnltk
+matplotlib-inline==0.2.2
+    # via ipython
+mdurl==0.1.2
+    # via markdown-it-py
+mecab-python3==1.0.12
+    # via -r xtts-in-linux.txt
+mojimoji==0.0.13
+    # via cutlet
+more-itertools==11.2.1
+    # via
+    #   inflect
+    #   jaraco-functools
+mpmath==1.3.0
+    # via sympy
+msgpack==1.2.4
+    # via librosa
+murmurhash==1.0.16
+    # via
+    #   preshed
+    #   spacy
+    #   thinc
+narwhals==2.28.0
+    # via scikit-learn
+networkx==3.6.1
+    # via
+    #   estnltk
+    #   estnltk-core
+    #   gruut
+    #   torch
+nltk==3.10.4
+    # via
+    #   estnltk
+    #   g2pkk
+num2words==0.5.14
+    # via
+    #   -r xtts-in-linux.txt
+    #   gruut
+numba==0.68.1
+    # via librosa
+numpy==1.26.4
+    # via
+    #   -r xtts-in-linux.txt
+    #   blis
+    #   contourpy
+    #   coqui-tts-trainer
+    #   ctranslate2
+    #   encodec
+    #   gruut
+    #   librosa
+    #   matplotlib
+    #   numba
+    #   onnxruntime
+    #   pandas
+    #   scikit-learn
+    #   scipy
+    #   soundfile
+    #   soxr
+    #   spacy
+    #   tensorboard
+    #   thinc
+    #   transformers
+onnxruntime==1.32.0
+    # via faster-whisper
+packaging==26.3
+    # via
+    #   coqui-tts-trainer
+    #   estnltk
+    #   estnltk-core
+    #   huggingface-hub
+    #   lazy-loader
+    #   matplotlib
+    #   onnxruntime
+    #   pooch
+    #   spacy
+    #   tensorboard
+    #   thinc
+    #   transformers
+    #   weasel
+pandas==3.0.6
+    # via
+    #   estnltk
+    #   estnltk-core
+parso==0.8.7
+    # via jedi
+pexpect==4.9.0
+    # via ipython
+pillow==13.0.0
+    # via
+    #   matplotlib
+    #   tensorboard
+platformdirs==4.14.5
+    # via pooch
+pooch==1.9.0
+    # via librosa
+preshed==3.0.15
+    # via
+    #   spacy
+    #   thinc
+prompt-toolkit==3.0.53
+    # via ipython
+protobuf==7.36.2
+    # via
+    #   onnxruntime
+    #   tensorboard
+psutil==7.2.2
+    # via
+    #   coqui-tts-trainer
+    #   ipython
+ptyprocess==0.7.0
+    # via pexpect
+pure-eval==0.2.4
+    # via stack-data
+pyahocorasick==2.3.1
+    # via estnltk
+pycparser==3.12
+    # via cffi
+pydantic==2.14.3
+    # via
+    #   confection
+    #   spacy
+    #   thinc
+    #   typer
+    #   weasel
+pydantic-core==2.50.4
+    # via pydantic
+pygments==2.21.0
+    # via
+    #   ipython
+    #   ipython-pygments-lexers
+    #   rich
+pyparsing==3.3.3
+    # via matplotlib
+pypinyin==0.55.0
+    # via -r xtts-in-linux.txt
+pysbd==0.3.4
+    # via -r xtts-in-linux.txt
+python-crfsuite==0.9.12
+    # via
+    #   estnltk
+    #   gruut
+python-dateutil==4.0.0
+    # via
+    #   dateparser
+    #   matplotlib
+    #   pandas
+pytz==2026.6
+    # via dateparser
+pyyaml==6.0.3
+    # via
+    #   ctranslate2
+    #   huggingface-hub
+    #   transformers
+regex==2026.11.15
+    # via
+    #   dateparser
+    #   estnltk
+    #   estnltk-core
+    #   nltk
+    #   transformers
+requests==2.34.2
+    # via
+    #   estnltk
+    #   huggingface-hub
+    #   pooch
+    #   spacy
+    #   transformers
+    #   weasel
+rich==15.0.0
+    # via typer
+safetensors==0.8.0
+    # via transformers
+scikit-learn==1.9.1
+    # via librosa
+scipy==1.17.1
+    # via
+    #   -r xtts-in-linux.txt
+    #   librosa
+    #   scikit-learn
+setuptools==84.2.1
+    # via
+    #   spacy
+    #   tensorboard
+    #   thinc
+    #   torch
+shellingham==1.5.4
+    # via typer
+six==1.17.0
+    # via
+    #   html5lib
+    #   jsonlines
+smart-open==7.7.1
+    # via weasel
+soundfile==0.14.0
+    # via
+    #   -r xtts-in-linux.txt
+    #   coqui-tts-trainer
+    #   librosa
+soupsieve==2.10
+    # via beautifulsoup4
+soxr==1.1.0
+    # via librosa
+spacy==3.7.5
+    # via -r xtts-in-linux.txt
+spacy-legacy==3.0.12
+    # via spacy
+spacy-loggers==1.0.5
+    # via spacy
+srsly==2.5.6
+    # via
+    #   confection
+    #   spacy
+    #   thinc
+    #   weasel
+stack-data==0.6.3
+    # via ipython
+sympy==1.14.0
+    # via torch
+tensorboard==2.21.0
+    # via coqui-tts-trainer
+tensorboard-data-server==0.7.2
+    # via tensorboard
+thinc==8.2.5
+    # via spacy
+threadpoolctl==3.8.0
+    # via scikit-learn
+tokenizers==0.20.1
+    # via
+    #   -r xtts-in-linux.txt
+    #   faster-whisper
+    #   transformers
+torch @ https://download.pytorch.org/whl/cpu/torch-2.15.0%2Bcpu-cp311-cp311-manylinux_2_28_x86_64.whl
+    # via
+    #   -r xtts-in-linux.txt
+    #   coqui-tts-trainer
+    #   encodec
+    #   torchaudio
+torchaudio @ https://download.pytorch.org/whl/cpu/torchaudio-2.11.1%2Bcpu-py3-none-manylinux_2_28_x86_64.whl
+    # via
+    #   -r xtts-in-linux.txt
+    #   encodec
+tqdm==4.70.1
+    # via
+    #   estnltk
+    #   faster-whisper
+    #   huggingface-hub
+    #   nltk
+    #   spacy
+    #   transformers
+traitlets==5.16.1
+    # via
+    #   ipython
+    #   matplotlib-inline
+transformers==4.46.2
+    # via -r xtts-in-linux.txt
+tts-preprocess-et @ git+https://github.com/TartuNLP/tts_preprocess_et.git@698dcbf6c2b5acd44a06f189863e5b9d067bf258
+    # via -r xtts-in-linux.txt
+typeguard==4.6.0
+    # via inflect
+typer==0.29.1
+    # via
+    #   spacy
+    #   typer-slim
+typer-slim==0.24.0
+    # via weasel
+typing-extensions==4.16.0
+    # via
+    #   beautifulsoup4
+    #   coqpit-config
+    #   grpcio
+    #   huggingface-hub
+    #   ipython
+    #   librosa
+    #   pydantic
+    #   pydantic-core
+    #   soundfile
+    #   torch
+    #   typeguard
+    #   typing-inspection
+typing-inspection==0.4.5
+    # via pydantic
+tzdata==2026.6
+    # via python-dateutil
+tzlocal==5.4.5
+    # via dateparser
+unidic-lite==1.0.8
+    # via -r xtts-in-linux.txt
+urllib3==2.8.0
+    # via requests
+wasabi==1.1.3
+    # via
+    #   spacy
+    #   thinc
+    #   weasel
+wcwidth==0.9.4
+    # via prompt-toolkit
+weasel==0.4.3
+    # via spacy
+webencodings==0.6.1
+    # via html5lib
+werkzeug==3.1.9
+    # via tensorboard
+wrapt==2.5.2
+    # via smart-open

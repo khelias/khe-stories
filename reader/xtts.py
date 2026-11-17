@@ -14,7 +14,6 @@ from array import array
 from pathlib import Path
 
 import librosa
-import mlx_whisper
 import numpy as np
 import soundfile
 import torch
@@ -23,12 +22,11 @@ from huggingface_hub.errors import LocalEntryNotFoundError
 from scipy.signal import resample_poly
 
 from reading import QUOTES
+from whisper import pick, transcriber
 
 MODEL = "tartuNLP/XTTS-v2-est"
 MODEL_REVISION = "58478fd9a8bdaba60bf11068a7a6822a66d67fae"
 MODEL_FILES = ["config.json", "model.pth", "dvae.pth", "mel_stats.pth", "vocab.json", "TTS/*.py", "TTS/*.json", "TTS/*.dat"]
-WHISPER = "mlx-community/whisper-large-v3-turbo"
-WHISPER_REVISION = "a4aaeec0636e6fef84abdcbe3544cb2bf7e9f6fb"
 WHISPER_RATE = 16000
 
 FIRST = {"temperature": 0.1, "top_k": 10, "top_p": 0.3, "repetition_penalty": 10.0, "speed": 1.0}
@@ -90,7 +88,8 @@ def synthesise(texts: list[str], clips: list[Path], prompt: str) -> list[tuple[i
     spelled out, since Whisper otherwise never writes them right and so sends a
     good reading to be read again."""
     repo = fetch(MODEL, "model.pth", revision=MODEL_REVISION, allow_patterns=MODEL_FILES)
-    whisper = str(fetch(WHISPER, "weights.safetensors", revision=WHISPER_REVISION))
+    whisper = pick()
+    transcribe = transcriber(whisper, str(fetch(whisper.repo, whisper.weights, revision=whisper.revision)), prompt)
     sys.path.insert(0, str(repo))  # the model ships its own fork of Coqui TTS, with Estonian
     import TTS.tts.models.xtts as xtts_module
     from TTS.tts.configs.xtts_config import XttsConfig
@@ -112,7 +111,7 @@ def synthesise(texts: list[str], clips: list[Path], prompt: str) -> list[tuple[i
             # Seeded by the text, and Whisper greedy, so a re-export reads the same.
             torch.manual_seed(zlib.crc32(said.encode()) + attempt)
             wav = np.asarray(model.inference(said, "et", latent, speaker, **params)["wav"], np.float32)
-            heard = mlx_whisper.transcribe(resample_poly(wav, WHISPER_RATE, rate).astype(np.float32), path_or_hf_repo=whisper, language="et", temperature=0.0, initial_prompt=prompt)["text"].strip()
+            heard = transcribe(resample_poly(wav, WHISPER_RATE, rate).astype(np.float32))
             score = difflib.SequenceMatcher(None, squash(said), squash(heard)).ratio()
             faults = [
                 *(["words after the end"] if heard_after_end(said, heard) >= EXTRA_CHARS else []),
