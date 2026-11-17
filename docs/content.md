@@ -8,7 +8,8 @@ before anything is bundled, and a build fails on the first problem.
     <content>/
       catalog.json
       stories/<route>.json
-      art/<name>.svg            the pictures the catalog names
+      art/<name>.svg|webp       the pictures the catalog names
+      compose.json              the family build's only: what a child picks from
       audio/<sha256>.m4a        not read by the build; served beside it
 
 ## catalog.json
@@ -23,7 +24,8 @@ before anything is bundled, and a build fails on the first problem.
       "published": "2026-11-16",
       "art": "siil-otsis-und.svg",
       "duration": 98.181,
-      "audio": "fe8b1fa7…"
+      "audio": "fe8b1fa7…",
+      "author": null
     }
   ]
 }
@@ -37,14 +39,20 @@ before anything is bundled, and a build fails on the first problem.
 - `published`: the day the story was published, or `null`. The public build
   holds only stories with a date; the family build holds all.
 - `art`: the story's picture, a file name under `art/` matching
-  `^[a-z0-9-]+\.svg$`, or absent (or `null`) to draw the app's fallback scene.
+  `^[a-z0-9-]+\.(svg|webp)$`, or absent (or `null`) to draw the app's fallback scene.
   A name that does not match, or a file that is missing or fails the picture
   rules below, fails the build.
 - `duration`: seconds of audio, or `null` for a story read as text only.
 - `audio`: the sha256 of the story's m4a, or `null` for text only. Both or
   neither of `duration` and `audio` are set.
+- `author`: the name of the child who made the story, at most 40 characters,
+  or absent (or `null`) for the family's own. A story with an author is on
+  the children's shelf, "Meie enda jutud", below the family's stories, and
+  its card names the author (estate
+  [ADR-037](https://github.com/khelias/khe-architecture/blob/main/decisions/037-childrens-stories-are-made-by-an-unattended-job.md)).
 
-The order of the list is the order of the library.
+The order of the list is the order of the library: the family's stories in
+that order, then the children's shelf in that order.
 
 ## stories/&lt;route&gt;.json
 
@@ -63,6 +71,39 @@ The build writes each story file as a hashed asset
 (`assets/<route>-<hash>.json`), so a changed text is a new URL that no cache
 holds, and writes the build's own `catalog.json` beside `index.html` for the
 deploy and its leak check. The page itself takes the catalog from its bundle.
+
+## art/&lt;name&gt;.webp
+
+A raster picture, for a story on the children's shelf (estate ADR-037,
+which amends ADR-033 point 1 for that shelf). The app draws it with `<img>`
+as it does an SVG, and the build writes it as a hashed asset. `checkWebp` in
+`src/content.ts` reads only the header:
+
+- At most 400 KB.
+- A RIFF `WEBP` file whose RIFF size is the file's, holding exactly one
+  chunk, `VP8 ` (lossy, one key frame) or `VP8L` (lossless, version 0). An
+  extended file (`VP8X`, which can carry metadata, an alpha chunk or
+  animation) fails.
+- 600 by 800 or 1200 by 1600, read from that chunk's header: the SVG frame,
+  once or twice over, with the same composition.
+
+## compose.json
+
+What a child picks from when she asks for a story in the family build, each
+choice an id a request carries and the name it shows:
+
+```json
+{
+  "cast": [{ "id": "siil", "name": "Siil" }],
+  "places": [{ "id": "mets", "name": "Mets" }],
+  "kinds": [{ "id": "naljakas", "name": "Naljakas jutt" }]
+}
+```
+
+Each list is non-empty, each id matches `^[a-z0-9-]+$` and is unique in its
+list, each name is a non-empty string. The names are the family's, so the
+public build fails when its content holds the file; the private repo stages
+it for the family build only.
 
 ## art/&lt;name&gt;.svg
 

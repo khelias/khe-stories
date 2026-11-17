@@ -26,6 +26,16 @@
       "art": "ookull-luges-tahti.svg",
       "duration": null,
       "audio": null
+    },
+    {
+      "route": "konn-tahtis-lennata",
+      "title": "Konn, kes tahtis lennata",
+      "told": "2026-11-10",
+      "published": "2026-11-17",
+      "art": "konn-tahtis-lennata.webp",
+      "duration": null,
+      "audio": null,
+      "author": "Mia"
     }
   ]
 }

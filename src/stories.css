@@ -271,6 +271,13 @@ body.stories-page {
   line-height: 1.2;
 }
 
+.story-card-author {
+  display: block;
+  margin-top: 4px;
+  color: var(--label-2);
+  font-size: 14px;
+}
+
 .cards .story-card-meta {
   margin-top: 4px;
   color: var(--label-2);
@@ -1114,7 +1121,8 @@ body[data-playing] .icon-pause {
     font-size: 20px;
   }
 
-  .cards .story-card-meta {
+  .cards .story-card-meta,
+  .story-card-author {
     font-size: 15px;
   }
 

@@ -27,7 +27,9 @@ worker deciding by URL). The content contract is
   handler) and the dim over the last one's final minute.
 - `src/content.ts` - the contract's types and checks, shared with the build,
   `checkArt` among them: the allowlist every story picture passes
-  ([estate ADR-033](https://github.com/khelias/khe-architecture/blob/main/decisions/033-story-pictures-are-content.md)).
+  ([estate ADR-033](https://github.com/khelias/khe-architecture/blob/main/decisions/033-story-pictures-are-content.md)),
+  and `checkWebp` for the raster pictures of the children's shelf
+  ([estate ADR-037](https://github.com/khelias/khe-architecture/blob/main/decisions/037-childrens-stories-are-made-by-an-unattended-job.md)).
 - `src/art.ts` - a story's picture as an `<img>`; `src/art/night.svg` is the
   fallback scene for a story without one.
 - `src/resume.ts` - where listening stopped, `unejanku:v1:pos:<route>`.

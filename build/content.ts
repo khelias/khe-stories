@@ -3,7 +3,7 @@ import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
-import { checkArt, parseCatalog, parseStory, storiesFor, type BuildName, type Catalog, type CatalogEntry, type Story } from '../src/content.ts';
+import { checkArt, checkWebp, ContentError, parseCatalog, parseCompose, parseStory, storiesFor, type BuildName, type Catalog, type CatalogEntry, type Story } from '../src/content.ts';
 import { AUDIO_FILE, AUDIO_PREFIX, shaUnder } from '../src/offline-names.ts';
 
 const VIRTUAL_ID = 'virtual:stories';
@@ -16,7 +16,13 @@ interface LoadedStory {
   /** Where it is served under the base: a hashed asset, so a changed text is a new URL. */
   readonly file: string;
   /** The story's picture, checked, and where it is served; null draws the app's fallback. */
-  readonly picture: { readonly svg: string; readonly file: string } | null;
+  readonly picture: Picture | null;
+}
+
+interface Picture {
+  readonly body: Uint8Array;
+  readonly type: string;
+  readonly file: string;
 }
 
 interface Content {
@@ -24,29 +30,46 @@ interface Content {
   readonly stories: readonly LoadedStory[];
 }
 
-const hashOf = (source: string) => createHash('sha256').update(source).digest('hex').slice(0, 10);
+const hashOf = (source: string | Uint8Array) => createHash('sha256').update(source).digest('hex').slice(0, 10);
 
-function readText(path: string): string {
+function readBytes(path: string): Buffer {
   if (!existsSync(path)) throw new Error(`${path} does not exist`);
-  return readFileSync(path, 'utf8');
+  return readFileSync(path);
 }
 
-function readArt(dir: string, name: string): { svg: string; file: string } {
-  const svg = readText(join(dir, 'art', name));
-  checkArt(svg, `art/${name}`);
-  return { svg, file: `assets/${name.slice(0, -'.svg'.length)}-${hashOf(svg)}.svg` };
+const readText = (path: string) => readBytes(path).toString('utf8');
+
+const PICTURE_TYPES = { svg: 'image/svg+xml', webp: 'image/webp' } as const;
+
+/** A picture the catalog names, checked by its kind; the catalog's check has its extension. */
+function readArt(dir: string, name: string): Picture {
+  const body = readBytes(join(dir, 'art', name));
+  const dot = name.lastIndexOf('.');
+  const extension = name.slice(dot + 1) as keyof typeof PICTURE_TYPES;
+  if (extension === 'webp') checkWebp(body, `art/${name}`);
+  else checkArt(body.toString('utf8'), `art/${name}`);
+  return { body, type: PICTURE_TYPES[extension], file: `assets/${name.slice(0, dot)}-${hashOf(body)}.${extension}` };
 }
 
 const readJson = (path: string) => JSON.parse(readText(path)) as unknown;
 
 /** Every file the build writes for its stories, by path under the base, with its type. */
-const servedFiles = ({ stories }: Content) => new Map<string, { type: string; body: string }>(stories.flatMap(({ file, json, picture }) => [
+const servedFiles = ({ stories }: Content) => new Map<string, { type: string; body: string | Uint8Array }>(stories.flatMap(({ file, json, picture }) => [
   [file, { type: 'application/json', body: json }],
-  ...(picture ? [[picture.file, { type: 'image/svg+xml', body: picture.svg }] as const] : []),
+  ...(picture ? [[picture.file, picture] as const] : []),
 ]));
+
+/** `compose.json` holds the family's names, so the public build fails rather than ship it. */
+function checkCompose(dir: string, build: BuildName): void {
+  const path = join(dir, 'compose.json');
+  if (!existsSync(path)) return;
+  if (build === 'public') throw new ContentError('compose.json is in the content of the public build, which must not hold it');
+  parseCompose(readJson(path));
+}
 
 /** A content directory's stories for one build, every file checked. */
 function loadContent(dir: string, build: BuildName): Content {
+  checkCompose(dir, build);
   const stories = storiesFor(build, parseCatalog(readJson(join(dir, 'catalog.json')))).map((entry) => {
     const story = parseStory(readJson(join(dir, 'stories', `${entry.route}.json`)), entry);
     const json = JSON.stringify(story);
