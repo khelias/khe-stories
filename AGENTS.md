@@ -45,8 +45,10 @@ worker deciding by URL). The content contract is
 - `e2e/server.ts` - serves a build as nginx will, for e2e and `preview`.
 - `reader/` - reads a story aloud (estate ADR-036): `read.py` the command,
   `reading.py` the pieces and pauses, `xtts.py` the TTS run with its Whisper
-  and pitch checks, `pcm.py` silence and AAC, every package pinned in
-  `requirements.txt`. It holds no family content: the private repo passes the
+  and pitch checks, `whisper.py` the Whisper it checks with (mlx-whisper on
+  Apple silicon, faster-whisper elsewhere), `pcm.py` silence and AAC, every
+  package pinned in `requirements.txt` (macOS) and `requirements-linux.txt`
+  (Linux x86_64, CPU torch). It holds no family content: the private repo passes the
   voice clips, the subtitle and the Whisper prompt. The method is
   [docs/reader.md](docs/reader.md).
 
@@ -66,8 +68,8 @@ Node 26 (`.nvmrc`), npm.
 - `npm run preview` - serves `output/public` with the demo audio.
 - `python3 -m unittest discover -s reader -q` - the reader's tests.
 - `uv run --no-project --python 3.11 --with-requirements reader/requirements.txt python reader/read.py --help` -
-  the reader (docs/reader.md "Running it"): Apple silicon for mlx-whisper,
-  `uv`, and `afconvert` or `ffmpeg`. The private repo's export runs it; the
+  the reader (docs/reader.md "Running it"): Apple silicon, or Linux x86_64
+  with `reader/requirements-linux.txt`, `uv`, and `afconvert` or `ffmpeg`. The private repo's export runs it; the
   demo stories are not read with it, since the only voice with permission is
   private.
 

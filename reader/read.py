@@ -1,6 +1,6 @@
 """Read a story aloud: story.m4a and story.json in the out directory.
 
-    uv run --no-project --python 3.11 --with-requirements reader/requirements.txt
+    uv run --no-project --python 3.11 --with-requirements reader/requirements.txt  # requirements-linux.txt on Linux
         python reader/read.py --story <story.json> --voice <clip.wav>...
         --subtitle <text> --prompt <text> --out <dir>
 
@@ -8,7 +8,8 @@ The story is JSON with `title` and `paragraphs` (a list of strings). story.json
 is `{title, paragraphs: [{text, start}], duration}`, each `start` the second
 its paragraph begins in story.m4a. Every piece is read by xtts.py as reading.py
 plans it, its silence trimmed, and the pieces joined with reading.py's pauses.
-docs/reader.md has the method; it runs on Apple silicon (mlx-whisper).
+docs/reader.md has the method; it runs on Apple silicon and on Linux x86_64
+(requirements-linux.txt), whisper.py picking the Whisper for each.
 """
 
 import argparse

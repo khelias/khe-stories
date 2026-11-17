@@ -37,7 +37,14 @@ Needed to run it:
   itself runs on the CPU (below): a story of 3 minutes 12 seconds took
   3 minutes 40 seconds on an M4 Pro, the Whisper checks and the re-reads
   included.
-- `uv`, which fetches the pinned packages of `reader/requirements.txt` and,
+- or Linux on x86_64, with `reader/requirements-linux.txt` in place of
+  `reader/requirements.txt`: Whisper runs through `faster-whisper`, a
+  CTranslate2 conversion of the same large-v3-turbo in int8 on the CPU, and
+  torch comes from PyTorch's CPU wheels. `reader/whisper.py` picks the
+  Whisper by the machine. The two Whispers may hear a reading differently,
+  so a story read on Linux can differ from the same story read on a Mac;
+  each machine reads the same story the same way every time.
+- `uv`, which fetches the pinned packages of the requirements file and,
   on the first run, the 5.6 GB model and Whisper from Hugging Face.
 - `afconvert` (macOS) or `ffmpeg` to encode AAC, 64 kbit/s mono.
 - `python3 -m unittest discover -s reader` runs the tests of how a story is
@@ -62,8 +69,9 @@ Needed to run it:
 - torchaudio 2.9 and later loads audio only through torchcodec and FFmpeg,
   so the reader gives the fork a soundfile loader. spacy below 3.8, the
   fork's bound, needs numpy 1.
-- Whisper is `mlx-community/whisper-large-v3-turbo`, also pinned by
-  revision.
+- Whisper is `mlx-community/whisper-large-v3-turbo` on Apple silicon and
+  `dropbox-dash/faster-whisper-large-v3-turbo` (faster-whisper's own
+  CTranslate2 conversion) elsewhere, each pinned by revision.
 
 ## Settings
 
@@ -154,6 +162,8 @@ times and compare word counts with the text:
 
     mlx_whisper.transcribe(<16 kHz float array>, path_or_hf_repo="mlx-community/whisper-large-v3-turbo", language="et")
 
+On Linux the same check is `faster_whisper.WhisperModel(<snapshot of
+dropbox-dash/faster-whisper-large-v3-turbo>, compute_type="int8").transcribe(<16 kHz float array>, language="et")`.
 Pass an array, not a path: without ffmpeg it cannot open files. Whisper
 writes "hea tööd" for "head ööd" and splits compounds in a person's reading
 too, so a low score is a reason to listen, not a fault. Have someone listen
