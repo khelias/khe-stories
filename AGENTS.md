@@ -38,7 +38,8 @@ worker deciding by URL). The content contract is
   permission. It talks to `server/` under `/api/`.
 - `src/resume.ts` - where listening stopped, `unejanku:v1:pos:<route>`.
 - `src/sw.ts` - the service worker; `build/sw.ts` compiles it per build. A
-  push wakes it with no payload, and it asks `/api/notices` what to show.
+  push wakes it with no payload, and it asks `/api/notices` what to show;
+  `src/notices.ts` shows the newest notice of each story.
 - `src/shell.css` - the family shell restated; `src/stories.css` - the
   room's own look, outside the design check (estate ADR-028 point 1).
 - `src/copy.ts` - every string, ET and EN.

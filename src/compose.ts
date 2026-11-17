@@ -24,8 +24,13 @@ const STATE_KEYS: Record<RequestState, CopyKey> = {
   running: 'stateRunning',
   committed: 'stateCommitted',
   ready: 'stateReady',
+  read: 'stateRead',
+  silent: 'stateSilent',
   failed: 'stateFailed',
 };
+
+/** The states whose story is on the shelf, at least as text. */
+const ON_SHELF: ReadonlySet<RequestState> = new Set(['ready', 'read', 'silent']);
 
 /** The service's refusal codes the child can do something about; anything else is errFailed. */
 const ERROR_KEYS: Record<string, CopyKey> = {
@@ -203,7 +208,7 @@ export function startCompose(compose: Compose, text: (key: CopyKey) => string): 
     sendError.textContent = errors.send ? text(errors.send) : '';
     loadError.hidden = !errors.load;
     recentList.replaceChildren(...requests.map((request) => {
-      const name = request.state === 'ready' && request.route && request.title
+      const name = ON_SHELF.has(request.state) && request.route && request.title
         ? el('a', { href: `#${request.route}`, lang: 'et' }, request.title)
         : el('span', { lang: 'et' }, nameOf(request.kind));
       return el('li', { 'data-state': request.state }, name, el('span', { class: 'compose-state' }, text(STATE_KEYS[request.state])));

@@ -10,11 +10,16 @@ export const RECORD_SECONDS = 60;
 export const CLIP_TYPES = ['audio/m4a', 'audio/webm'] as const;
 export type ClipType = (typeof CLIP_TYPES)[number];
 
-export type RequestState = 'queued' | 'running' | 'committed' | 'ready' | 'failed';
+/**
+ * `committed` the job has written the story, `ready` its text is on the shelf and the reading
+ * is coming, `read` the reading is on the shelf too, `silent` the text is and the reading
+ * never came.
+ */
+export type RequestState = 'queued' | 'running' | 'committed' | 'ready' | 'read' | 'silent' | 'failed';
 
-/** What the service worker shows when a push wakes it. */
+/** What the service worker shows when a push wakes it: `ready` the text, `read` the reading. */
 export interface Notice {
-  readonly kind: 'ready' | 'failed';
+  readonly kind: 'ready' | 'read' | 'failed';
   readonly route: string | null;
   readonly title: string | null;
 }
