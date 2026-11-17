@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { ART_MAX_BYTES, checkArt, ContentError, parseCatalog, parseStory, storiesFor, type CatalogEntry } from '../src/content.ts';
+import { ART_MAX_BYTES, checkArt, checkWebp, ContentError, parseCatalog, parseCompose, parseStory, storiesFor, WEBP_MAX_BYTES, type CatalogEntry } from '../src/content.ts';
 
 const SHA = 'a'.repeat(64);
 const entry = (overrides: Partial<CatalogEntry> = {}) => ({
@@ -11,14 +11,16 @@ const entry = (overrides: Partial<CatalogEntry> = {}) => ({
   art: 'siil.svg',
   duration: 60,
   audio: SHA,
+  author: null,
   ...overrides,
 });
 
 describe('parseCatalog', () => {
   it('reads the demo catalog', () => {
     const catalog = parseCatalog(JSON.parse(readFileSync('demo/catalog.json', 'utf8')));
-    expect(catalog.stories.map(({ route }) => route)).toEqual(['siil-otsis-und', 'vaike-vihmapilv', 'ookull-luges-tahti']);
-    expect(catalog.stories.filter(({ audio }) => audio === null)).toHaveLength(1);
+    expect(catalog.stories.map(({ route }) => route)).toEqual(['siil-otsis-und', 'vaike-vihmapilv', 'ookull-luges-tahti', 'konn-tahtis-lennata']);
+    expect(catalog.stories.filter(({ audio }) => audio === null)).toHaveLength(2);
+    expect(catalog.stories.filter(({ author }) => author !== null).map(({ art }) => art)).toEqual(['konn-tahtis-lennata.webp']);
     expect(catalog.stories.some(({ duration }) => (duration ?? 0) > 90)).toBe(true);
   });
 
@@ -46,7 +48,22 @@ describe('parseCatalog', () => {
     expect(parseCatalog({ stories: [entry({ art: null })] }).stories[0]?.art).toBeNull();
   });
 
-  it.each(['siil', 'Siil.svg', '../siil.svg', 'siil.svg.png', 'sun', 'art/siil.svg', ''])('rejects the picture name %j', (art) => {
+  it('reads an author, and none as the family\'s own story', () => {
+    expect(parseCatalog({ stories: [entry({ author: 'Mia' })] }).stories[0]?.author).toBe('Mia');
+    const withoutAuthor: Record<string, unknown> = { ...entry() };
+    delete withoutAuthor.author;
+    expect(parseCatalog({ stories: [withoutAuthor] }).stories[0]?.author).toBeNull();
+  });
+
+  it.each(['', ' Mia', 'Mia\n', 'M'.repeat(41)])('rejects the author %j', (author) => {
+    expect(() => parseCatalog({ stories: [entry({ author })] })).toThrow(/author/);
+  });
+
+  it('takes a webp picture name', () => {
+    expect(parseCatalog({ stories: [entry({ art: 'siil.webp' })] }).stories[0]?.art).toBe('siil.webp');
+  });
+
+  it.each(['siil', 'Siil.svg', '../siil.svg', 'siil.svg.png', 'siil.png', 'siil.webp.svg.gif', 'sun', 'art/siil.svg', ''])('rejects the picture name %j', (art) => {
     expect(() => parseCatalog({ stories: [entry({ art })] })).toThrow(/art/);
   });
 });
@@ -87,7 +104,7 @@ const GOOD = '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop off
 describe('checkArt', () => {
   it('passes every picture in the repo', () => {
     for (const dir of ['demo/art', 'src/art']) {
-      for (const file of readdirSync(dir)) expect(() => { checkArt(readFileSync(`${dir}/${file}`, 'utf8'), file); }).not.toThrow();
+      for (const file of readdirSync(dir).filter((name) => name.endsWith('.svg'))) expect(() => { checkArt(readFileSync(`${dir}/${file}`, 'utf8'), file); }).not.toThrow();
     }
   });
 
@@ -146,5 +163,70 @@ describe('checkArt', () => {
     ['an oversized file', SVG(GOOD + '<g></g>'.repeat(ART_MAX_BYTES / 7 + 1))],
   ])('fails %s', (_, svg) => {
     expect(() => { checkArt(svg, 'bad'); }).toThrow(ContentError);
+  });
+});
+
+describe('parseCompose', () => {
+  const choice = (id: string) => [{ id, name: 'Nimi' }];
+  it('reads the cast, the places and the kinds', () => {
+    expect(parseCompose({ cast: choice('siil'), places: choice('mets'), kinds: choice('naljakas') }).cast).toEqual([{ id: 'siil', name: 'Nimi' }]);
+  });
+
+  it.each([
+    ['an empty list', { cast: [], places: choice('mets'), kinds: choice('a') }],
+    ['a missing list', { cast: choice('siil'), kinds: choice('a') }],
+    ['a bad id', { cast: choice('Siil'), places: choice('mets'), kinds: choice('a') }],
+    ['an id twice', { cast: [...choice('siil'), ...choice('siil')], places: choice('mets'), kinds: choice('a') }],
+    ['an empty name', { cast: [{ id: 'siil', name: ' ' }], places: choice('mets'), kinds: choice('a') }],
+  ])('rejects %s', (_, value) => {
+    expect(() => parseCompose(value)).toThrow(ContentError);
+  });
+});
+
+/** A RIFF WEBP file of one chunk, with the header fields set and the rest zero. */
+function webp(chunk: 'VP8 ' | 'VP8L' | 'VP8X', width: number, height: number, payload = 64): Uint8Array {
+  const bytes = new Uint8Array(20 + payload);
+  const view = new DataView(bytes.buffer);
+  const put = (at: number, ascii: string) => { for (const [i, c] of [...ascii].entries()) bytes[at + i] = c.charCodeAt(0); };
+  put(0, 'RIFF');
+  view.setUint32(4, bytes.byteLength - 8, true);
+  put(8, 'WEBP');
+  put(12, chunk);
+  view.setUint32(16, payload, true);
+  if (chunk === 'VP8 ') {
+    bytes.set([0x9d, 0x01, 0x2a], 23);
+    view.setUint16(26, width, true);
+    view.setUint16(28, height, true);
+  } else if (chunk === 'VP8L') {
+    bytes[20] = 0x2f;
+    view.setUint32(21, (width - 1) | ((height - 1) << 14), true);
+  }
+  return bytes;
+}
+
+describe('checkWebp', () => {
+  it('passes every webp picture in the repo', () => {
+    const files = readdirSync('demo/art').filter((name) => name.endsWith('.webp'));
+    expect(files.length).toBeGreaterThan(0);
+    for (const name of files) checkWebp(readFileSync(`demo/art/${name}`), name);
+  });
+
+  it.each([[600, 800], [1200, 1600]])('passes lossy and lossless at %ix%i', (width, height) => {
+    checkWebp(webp('VP8 ', width, height), 'good');
+    checkWebp(webp('VP8L', width, height), 'good');
+  });
+
+  it.each([
+    ['the wrong size', webp('VP8 ', 800, 600)],
+    ['a lossless one of the wrong size', webp('VP8L', 600, 801)],
+    ['an extended file, which may carry metadata or animation', webp('VP8X', 600, 800)],
+    ['a VP8 frame that is not a key frame', (() => { const bytes = webp('VP8 ', 600, 800); bytes[20] = 1; return bytes; })()],
+    ['a VP8L image of another version', (() => { const bytes = webp('VP8L', 600, 800); bytes[24] = (bytes[24] ?? 0) | 0x20; return bytes; })()],
+    ['a RIFF size other than the file\'s', (() => { const bytes = webp('VP8 ', 600, 800); bytes[4] = 1; return bytes; })()],
+    ['a second chunk after the image', (() => { const bytes = webp('VP8 ', 600, 800); const longer = new Uint8Array(bytes.byteLength + 12); longer.set(bytes); new DataView(longer.buffer).setUint32(4, longer.byteLength - 8, true); return longer; })()],
+    ['a PNG renamed .webp', readFileSync('public/icon-512.png')],
+    ['a file over the limit', webp('VP8 ', 600, 800, WEBP_MAX_BYTES)],
+  ])('fails %s', (_, bytes) => {
+    expect(() => { checkWebp(bytes, 'bad'); }).toThrow(ContentError);
   });
 });

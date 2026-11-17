@@ -4,9 +4,15 @@
 export const ROUTE = /^[a-z0-9-]+$/;
 export const SHA256 = /^[0-9a-f]{64}$/;
 /** A story picture's file name under `<content>/art/`. */
-const ART_FILE = /^[a-z0-9-]+\.svg$/;
-/** The largest picture the build ships, in bytes. */
+const ART_FILE = /^[a-z0-9-]+\.(svg|webp)$/;
+/** The largest SVG picture the build ships, in bytes. */
 export const ART_MAX_BYTES = 200 * 1024;
+/** The largest raster picture, a child's story's (estate ADR-037), in bytes. */
+export const WEBP_MAX_BYTES = 400 * 1024;
+/** The sizes a raster picture may have: the SVG frame, once or twice over. */
+const WEBP_SIZES = ['600x800', '1200x1600'];
+/** A name a child's story is credited to, as the shelf shows it. */
+const AUTHOR_MAX = 40;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface CatalogEntry {
@@ -23,6 +29,8 @@ export interface CatalogEntry {
   readonly duration: number | null;
   /** The sha256 of the story's m4a, null for a story read as text only. */
   readonly audio: string | null;
+  /** Who made the story, for one on the children's shelf; null for the family's own. */
+  readonly author: string | null;
 }
 
 export interface Catalog {
@@ -78,6 +86,10 @@ function entry(value: unknown, index: number): CatalogEntry {
   if (art !== null && (typeof art !== 'string' || !ART_FILE.test(art))) throw new ContentError(`${where}.art is neither null nor a file name matching ${String(ART_FILE)}`);
   const duration = raw.duration === null || raw.duration === undefined ? null : seconds(raw.duration, `${where}.duration`);
   if ((audio === null) !== (duration === null)) throw new ContentError(`${where} has audio without a duration or a duration without audio`);
+  const author = raw.author === null || raw.author === undefined ? null : text(raw.author, `${where}.author`);
+  if (author !== null && (author.length > AUTHOR_MAX || author !== author.trim() || /\p{Cc}/u.test(author))) {
+    throw new ContentError(`${where}.author is not a plain name of at most ${String(AUTHOR_MAX)} characters`);
+  }
   return {
     route,
     title: text(raw.title, `${where}.title`),
@@ -86,6 +98,7 @@ function entry(value: unknown, index: number): CatalogEntry {
     art,
     duration,
     audio,
+    author,
   };
 }
 
@@ -128,6 +141,39 @@ export function parseStory(value: unknown, of: CatalogEntry): Story {
 }
 
 export type BuildName = 'public' | 'family';
+
+/** One choice in the compose view: an id the request carries and the name it shows. */
+export interface ComposeChoice {
+  readonly id: string;
+  readonly name: string;
+}
+
+/** What a child picks from when she asks for a story: who is in it, where, and what kind. */
+export interface Compose {
+  readonly cast: readonly ComposeChoice[];
+  readonly places: readonly ComposeChoice[];
+  readonly kinds: readonly ComposeChoice[];
+}
+
+function choices(value: unknown, where: string): ComposeChoice[] {
+  if (!Array.isArray(value) || !value.length) throw new ContentError(`${where} is not a non-empty list`);
+  const seen = new Set<string>();
+  return value.map((item, index) => {
+    const at = `${where}[${String(index)}]`;
+    const raw = object(item, at);
+    const id = text(raw.id, `${at}.id`);
+    if (!ROUTE.test(id)) throw new ContentError(`${at}.id "${id}" is not ${String(ROUTE)}`);
+    if (seen.has(id)) throw new ContentError(`${where} has the id "${id}" twice`);
+    seen.add(id);
+    return { id, name: text(raw.name, `${at}.name`) };
+  });
+}
+
+/** `compose.json`, checked: the family build's only, since its names are the family's. */
+export function parseCompose(value: unknown): Compose {
+  const raw = object(value, 'compose');
+  return { cast: choices(raw.cast, 'compose.cast'), places: choices(raw.places, 'compose.places'), kinds: choices(raw.kinds, 'compose.kinds') };
+}
 
 /** The stories a build holds: the public one only those marked published. */
 export function storiesFor(build: BuildName, catalog: Catalog): readonly CatalogEntry[] {
@@ -232,4 +278,36 @@ export function checkArt(svg: string, where: string): void {
   if (roots !== 1) fail('the file is not one <svg> root');
   if (stack.length) fail(`<${stack.join('> <')}> is not closed`);
   for (const id of references) if (!ids.has(id)) fail(`url(#${id}) names no id in the file`);
+}
+
+/** Checks a raster picture, a child's story's (estate ADR-037), and throws a ContentError
+ *  naming the first problem: size, a RIFF WEBP file of exactly one VP8 or VP8L image whose
+ *  header gives one of the contract's sizes. Only the bytes the browser reads to decode it
+ *  are trusted: a file with any other chunk (VP8X with its metadata, animation) fails. */
+export function checkWebp(bytes: Uint8Array, where: string): void {
+  const fail = (problem: string): never => { throw new ContentError(`${where}: ${problem}`); };
+  if (bytes.byteLength > WEBP_MAX_BYTES) fail(`over ${String(WEBP_MAX_BYTES)} bytes`);
+  const ascii = (from: number, length: number) => String.fromCharCode(...bytes.subarray(from, from + length));
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (bytes.byteLength < 30 || ascii(0, 4) !== 'RIFF' || ascii(8, 4) !== 'WEBP') fail('not a WEBP file');
+  if (view.getUint32(4, true) + 8 !== bytes.byteLength) fail('the RIFF size is not the file\'s');
+  const chunk = ascii(12, 4);
+  const chunkSize = view.getUint32(16, true);
+  if (20 + chunkSize + (chunkSize % 2) !== bytes.byteLength) fail(`the ${chunk} chunk is not the file's only one`);
+  let width = 0;
+  let height = 0;
+  if (chunk === 'VP8 ') {
+    if (((bytes[20] ?? 1) & 1) !== 0 || bytes[23] !== 0x9d || bytes[24] !== 0x01 || bytes[25] !== 0x2a) fail('a VP8 image that is not one key frame with its start code');
+    width = view.getUint16(26, true) & 0x3fff;
+    height = view.getUint16(28, true) & 0x3fff;
+  } else if (chunk === 'VP8L') {
+    if (bytes[20] !== 0x2f) fail('a VP8L image without its signature');
+    const bits = view.getUint32(21, true);
+    if (bits >>> 29 !== 0) fail('a VP8L image of an unknown version');
+    width = (bits & 0x3fff) + 1;
+    height = ((bits >>> 14) & 0x3fff) + 1;
+  } else {
+    fail(`the chunk "${chunk}" is not VP8 or VP8L`);
+  }
+  if (!WEBP_SIZES.includes(`${String(width)}x${String(height)}`)) fail(`${String(width)}x${String(height)} is not one of ${WEBP_SIZES.join(', ')}`);
 }

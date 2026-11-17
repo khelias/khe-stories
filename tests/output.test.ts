@@ -43,6 +43,7 @@ function files(dir: string): string[] {
 }
 
 const count = (text: string, pattern: RegExp) => (text.match(pattern) ?? []).length;
+const COMPOSE = { cast: [{ id: 'siil', name: 'Väljamõeldud siil' }], places: [{ id: 'mets', name: 'Mets' }], kinds: [{ id: 'naljakas', name: 'Naljakas' }] };
 const outputs: Record<'public' | 'family', string> = { public: '', family: '' };
 
 beforeAll(async () => {
@@ -127,7 +128,7 @@ describe('the public build', () => {
   it('holds no story the catalog has not published', async () => {
     const content = tempDir('stories-content-');
     cpSync('demo', content, { recursive: true });
-    const catalog = JSON.parse(readFileSync(join(content, 'catalog.json'), 'utf8')) as { stories: { route: string; published: string | null }[] };
+    const catalog = JSON.parse(readFileSync(join(content, 'catalog.json'), 'utf8')) as { stories: { route: string; published: string | null; art: string }[] };
     const hidden = catalog.stories[2];
     if (!hidden) throw new Error('the demo catalog has fewer than three stories');
     hidden.published = null;
@@ -141,12 +142,12 @@ describe('the public build', () => {
       expect(text, file).not.toContain(story.paragraphs[0]?.text.slice(0, 40));
     }
     const built = JSON.parse(readFileSync(join(out, 'catalog.json'), 'utf8')) as { stories: unknown[] };
-    expect(built.stories).toHaveLength(2);
-    const pictures = files(out).filter((path) => path.endsWith('.svg')).map((path) => readFileSync(path, 'utf8'));
-    const hiddenArt = readFileSync(join(content, 'art', `${hidden.route}.svg`), 'utf8');
+    expect(built.stories).toHaveLength(catalog.stories.length - 1);
+    const pictures = files(out).filter((path) => /\.(svg|webp)$/.test(path)).map((path) => readFileSync(path, 'base64'));
+    const hiddenArt = readFileSync(join(content, 'art', hidden.art), 'base64');
     expect(pictures).not.toContain(hiddenArt);
     for (const shown of catalog.stories.filter((story) => story !== hidden)) {
-      expect(pictures).toContain(readFileSync(join(content, 'art', `${shown.route}.svg`), 'utf8'));
+      expect(pictures).toContain(readFileSync(join(content, 'art', shown.art), 'base64'));
     }
   });
 
@@ -157,6 +158,14 @@ describe('the public build', () => {
       const path = join(content, 'catalog.json');
       writeFileSync(path, readFileSync(path, 'utf8').replace('"siil-otsis-und.svg"', '"../siil.svg"'));
     }, /art/],
+    ['a webp of the wrong size', (content: string) => {
+      const path = join(content, 'art', 'konn-tahtis-lennata.webp');
+      const bytes = readFileSync(path);
+      bytes.writeUInt16LE(800, 26);
+      writeFileSync(path, bytes);
+    }, /800x800/],
+    ['a PNG named .webp', (content: string) => { cpSync('public/icon-512.png', join(content, 'art', 'konn-tahtis-lennata.webp')); }, /not a WEBP/],
+    ['compose.json, which holds the family\'s names', (content: string) => { writeFileSync(join(content, 'compose.json'), JSON.stringify(COMPOSE)); }, /compose\.json/],
   ])('fails on %s', async (_, spoil, problem) => {
     const content = tempDir('stories-content-');
     cpSync('demo', content, { recursive: true });
@@ -167,6 +176,15 @@ describe('the public build', () => {
 
 describe('the family build', () => {
   const html = () => readFileSync(join(outputs.family, 'index.html'), 'utf8');
+
+  it('checks compose.json and fails on a bad one', async () => {
+    const content = tempDir('stories-content-');
+    cpSync('demo', content, { recursive: true });
+    writeFileSync(join(content, 'compose.json'), JSON.stringify(COMPOSE));
+    await buildInto('family', content);
+    writeFileSync(join(content, 'compose.json'), JSON.stringify({ ...COMPOSE, kinds: [] }));
+    await expect(buildInto('family', content)).rejects.toThrow(/compose\.kinds/);
+  });
 
   it('shows the product view only, with no analytics and no indexing', () => {
     expect(html()).toMatch(/<html lang="et" data-khe-view="product"/);

@@ -27,6 +27,8 @@ interface Card {
   readonly progress: HTMLElement;
   /** The mark of a story kept on this phone. */
   readonly saved: HTMLElement;
+  /** Who made a story on the children's shelf; null on the family's own. */
+  readonly author: HTMLElement | null;
 }
 
 interface Item extends Card {
@@ -66,6 +68,7 @@ function renderCard(entry: BuiltStory): Card {
   const title = span('story-card-title');
   title.lang = 'et';
   title.textContent = entry.title;
+  const author = entry.author === null ? null : span('story-card-author');
   const meta = span('story-card-meta');
   const action = span('story-card-action', entry.audio ? PLAY_ICON : BOOK_ICON);
   action.append(span(''));
@@ -80,12 +83,12 @@ function renderCard(entry: BuiltStory): Card {
   savedLabel.dataset.i18n = 'saved';
   saved.append(savedLabel);
   meta.append(action, length, saved);
-  body.append(title, meta);
+  body.append(...[title, author, meta].filter((node) => node !== null));
   const track = span('story-card-progress');
   const progress = span('');
   track.append(progress);
   card.append(body, track);
-  return { card, action, label, progress, saved };
+  return { card, action, label, progress, saved, author };
 }
 
 async function loadText(entry: BuiltStory): Promise<Story> {
@@ -127,6 +130,8 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
   const storyLength = need<HTMLElement>('[data-story-length]');
   const hero = need<HTMLElement>('[data-hero]');
   const list = need<HTMLElement>('[data-cards]');
+  const shelf = need<HTMLElement>('[data-shelf]');
+  const shelfList = need<HTMLElement>('[data-shelf-cards]');
   const mini = need<HTMLElement>('[data-mini]');
   const miniLink = need<HTMLAnchorElement>('[data-mini-link]');
   const miniArt = need<HTMLElement>('[data-mini-art]');
@@ -141,7 +146,9 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
   const play = () => { audio.play().catch(() => {}); };
 
   if (!entries.length) throw new Error('the build holds no story');
-  const items: Item[] = entries.map((entry) => ({ ...renderCard(entry), entry, text: null }));
+  // Library order: the family's stories, then the children's shelf, as the page shows them.
+  const ordered = [...entries.filter((entry) => entry.author === null), ...entries.filter((entry) => entry.author !== null)];
+  const items: Item[] = ordered.map((entry) => ({ ...renderCard(entry), entry, text: null }));
   // Every text up front: a few KB each, and ready when a card is tapped.
   const textOf = (item: Item) => (item.text ??= loadText(item.entry));
   items.forEach((item) => { void textOf(item).catch(() => {}); });
@@ -171,7 +178,12 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
     heroItem = next;
     items.forEach((item) => { item.card.classList.toggle('is-hero', item === next); });
     if (next) hero.replaceChildren(next.card);
-    list.replaceChildren(...items.filter((item) => item !== next).map(({ card }) => card));
+    const family: HTMLElement[] = [];
+    const own: HTMLElement[] = [];
+    for (const item of items) if (item !== next) (item.entry.author === null ? family : own).push(item.card);
+    list.replaceChildren(...family);
+    shelfList.replaceChildren(...own);
+    shelf.hidden = !own.length;
   }
 
   function showCard(item: Item): void {
@@ -189,6 +201,7 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
       item.label.textContent = minutes('minutesShort', entry.duration);
     }
     item.saved.hidden = !(entry.audio && offline.isSaved(entry.audio));
+    if (item.author && entry.author !== null) item.author.textContent = fillTemplate(text('author'), { name: entry.author });
   }
 
   function showSave(): void {
@@ -464,6 +477,10 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
     showDuration();
     showMini();
   }
+
+  // Safari: a story plays on with the ringer switched to silent, as a media app's would.
+  const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+  if (session) session.type = 'playback';
 
   if ('mediaSession' in navigator) {
     const actions: [MediaSessionAction, MediaSessionActionHandler][] = [
