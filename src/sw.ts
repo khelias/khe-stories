@@ -5,7 +5,10 @@
 // (`/cdn-cgi/`) are never handled, so they go to the network as if there were no worker.
 // build/sw.ts compiles this file once per build with the constants below filled in.
 import { createPartialResponse } from 'workbox-range-requests';
-import { AUDIO_PREFIX, SAVED_PREFIX, audioCacheName, audioUrl, isShellCache, keepable, shaUnder, shellCacheName } from './offline-names.ts';
+import type { Notice } from '../server/contract.ts';
+import { ROUTE } from './content.ts';
+import { COPY } from './copy.ts';
+import { AUDIO_PREFIX, COMPOSE_HASH, SAVED_PREFIX, audioCacheName, audioUrl, isShellCache, keepable, shaUnder, shellCacheName } from './offline-names.ts';
 
 declare const self: ServiceWorkerGlobalScope;
 declare const __SW_VERSION__: string;
@@ -113,4 +116,50 @@ self.addEventListener('fetch', (event) => {
   } else if (PRECACHE.has(path)) {
     event.respondWith(shell(request, url.pathname));
   }
+});
+
+// A push carries nothing (docs/decisions/002 point 4): it wakes the worker, which asks the
+// service what is new for this device. The children's phones are in Estonian.
+
+async function showNotices(): Promise<void> {
+  const copy = COPY.et;
+  let notices: Notice[] = [];
+  try {
+    const response = await fetch('/api/notices', { credentials: 'same-origin', cache: 'no-store' });
+    if (response.ok) notices = ((await response.json()) as { notices: Notice[] }).notices;
+  } catch {
+    // Offline or refused: the generic notice below still says something is new.
+  }
+  // A push the user can see must show a notification, so an empty answer shows a generic one.
+  if (!notices.length) {
+    await self.registration.showNotification(copy.noticeOther, { icon: `${BASE}icon-180.png`, data: { route: null } });
+    return;
+  }
+  await Promise.all(notices.map((notice) => self.registration.showNotification(
+    notice.kind === 'ready' ? copy.noticeReady : copy.noticeFailed,
+    {
+      body: notice.kind === 'ready' ? (notice.title ?? '') : copy.noticeFailedBody,
+      icon: `${BASE}icon-180.png`,
+      tag: notice.route ?? notice.kind,
+      data: { route: notice.kind === 'ready' ? notice.route : null },
+    },
+  )));
+}
+
+self.addEventListener('push', (event) => {
+  event.waitUntil(showNotices());
+});
+
+// Opens the story the notice names, in the app's own window when one is open.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const route = (event.notification.data as { route?: unknown } | null)?.route;
+  const url = `${BASE}${typeof route === 'string' && ROUTE.test(route) ? `#${route}` : COMPOSE_HASH}`;
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const open = windows.find((client) => new URL(client.url).pathname.startsWith(BASE));
+    // navigate() works only on a window this worker controls; otherwise a new one opens.
+    const shown = open ? await open.focus().then(() => open.navigate(url)).catch(() => null) : null;
+    if (!shown) await self.clients.openWindow(url);
+  })());
 });

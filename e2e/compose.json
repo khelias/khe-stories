@@ -1,0 +1,15 @@
+{
+  "cast": [
+    { "id": "konn", "name": "Konn" },
+    { "id": "siil", "name": "Siil" },
+    { "id": "rebane", "name": "Rebane" }
+  ],
+  "places": [
+    { "id": "tiik", "name": "Tiik" },
+    { "id": "mets", "name": "Mets" }
+  ],
+  "kinds": [
+    { "id": "seiklus", "name": "Seiklus" },
+    { "id": "naljakas", "name": "Naljakas jutt" }
+  ]
+}

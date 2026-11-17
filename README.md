@@ -29,3 +29,9 @@ line names, with its licence.
 
 The code that reads them aloud is in `reader/`, and how it was chosen and
 tuned is in [docs/reader.md](docs/reader.md).
+
+In the family build the children can also ask for a story of their own. A
+small service in `server/` takes the request, has the private repo's job make
+it, and tells the child's phone when it is on her shelf
+([ADR-002](docs/decisions/002-a-request-service-beside-the-app.md)); it ships
+as its own container image.

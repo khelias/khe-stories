@@ -6,6 +6,8 @@ export const AUDIO_PREFIX = 'audio/';
 export const SAVED_PREFIX = 'saved/';
 /** An audio file's name, `<sha256>.m4a`, with the sha captured. */
 export const AUDIO_FILE = /^([0-9a-f]{64})\.m4a$/;
+/** The compose view's address in the family build, which a failed story's notice opens. */
+export const COMPOSE_HASH = '#uus-jutt';
 
 export const audioUrl = (base: string, sha: string) => `${base}${AUDIO_PREFIX}${sha}.m4a`;
 export const savedUrl = (base: string, sha: string) => `${base}${SAVED_PREFIX}${sha}.m4a`;
