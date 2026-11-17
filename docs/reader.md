@@ -19,6 +19,20 @@ builds the reader from the same commit as the app
         python reader/read.py --story story.json --voice clip-1.wav clip-2.wav \
         --subtitle "Unejutt metsast." --prompt "Mia, Oskar, unejutt." --out out/
 
+`--story` is a JSON file of the story's title and its paragraphs as plain
+text:
+
+    {"title": "Kuu akna taga", "paragraphs": ["Mia ja Oskar ...", "..."]}
+
+`out/story.json` repeats the title and each paragraph with the second it
+starts at in `out/story.m4a`, and the reading's length in seconds:
+
+    {"title": "Kuu akna taga", "paragraphs": [{"text": "Mia ja Oskar ...", "start": 4.21}], "duration": 192.31}
+
+`--subtitle` is a whole sentence with its full stop, read after the title;
+`--prompt` lists the names and unusual words of the stories, for Whisper.
+Needed to run it:
+
 - macOS on Apple silicon: Whisper runs through `mlx-whisper`. The model
   itself runs on the CPU (below): a story of 3 minutes 12 seconds took
   3 minutes 40 seconds on an M4 Pro, the Whisper checks and the re-reads
