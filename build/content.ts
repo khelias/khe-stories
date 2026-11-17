@@ -3,7 +3,7 @@ import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
-import { checkArt, checkWebp, ContentError, parseCatalog, parseCompose, parseStory, storiesFor, type BuildName, type Catalog, type CatalogEntry, type Story } from '../src/content.ts';
+import { checkArt, checkWebp, ContentError, parseCatalog, parseCompose, parseStory, storiesFor, type BuildName, type Catalog, type CatalogEntry, type Compose, type Story } from '../src/content.ts';
 import { AUDIO_FILE, AUDIO_PREFIX, shaUnder } from '../src/offline-names.ts';
 
 const VIRTUAL_ID = 'virtual:stories';
@@ -28,6 +28,8 @@ interface Picture {
 interface Content {
   readonly catalog: Catalog;
   readonly stories: readonly LoadedStory[];
+  /** What the compose view offers; null without `compose.json`, which only the family build reads. */
+  readonly compose: Compose | null;
 }
 
 const hashOf = (source: string | Uint8Array) => createHash('sha256').update(source).digest('hex').slice(0, 10);
@@ -60,23 +62,23 @@ const servedFiles = ({ stories }: Content) => new Map<string, { type: string; bo
 ]));
 
 /** `compose.json` holds the family's names, so the public build fails rather than ship it. */
-function checkCompose(dir: string, build: BuildName): void {
+function readCompose(dir: string, build: BuildName): Compose | null {
   const path = join(dir, 'compose.json');
-  if (!existsSync(path)) return;
+  if (!existsSync(path)) return null;
   if (build === 'public') throw new ContentError('compose.json is in the content of the public build, which must not hold it');
-  parseCompose(readJson(path));
+  return parseCompose(readJson(path));
 }
 
 /** A content directory's stories for one build, every file checked. */
 function loadContent(dir: string, build: BuildName): Content {
-  checkCompose(dir, build);
+  const compose = readCompose(dir, build);
   const stories = storiesFor(build, parseCatalog(readJson(join(dir, 'catalog.json')))).map((entry) => {
     const story = parseStory(readJson(join(dir, 'stories', `${entry.route}.json`)), entry);
     const json = JSON.stringify(story);
     const picture = entry.art === null ? null : readArt(dir, entry.art);
     return { entry, story, json, file: `assets/${entry.route}-${hashOf(json)}.json`, picture };
   });
-  return { catalog: { stories: stories.map(({ entry }) => entry) }, stories };
+  return { catalog: { stories: stories.map(({ entry }) => entry) }, stories, compose };
 }
 
 /** Serves `audio/<sha256>.m4a` from the content directory with Range, as nginx does. */
@@ -113,7 +115,7 @@ export function serveAudio(dir: string, sha: string, request: IncomingMessage, r
 
 /**
  * The stories of one build as the module `virtual:stories`: each catalog entry with the
- * URL of its story JSON and of its picture. The build emits both as hashed assets and `catalog.json`
+ * URL of its story JSON and of its picture, and the compose view's choices or null. The build emits both as hashed assets and `catalog.json`
  * (the build's own catalog, which the deploy, the leak check and the worker read); the dev
  * server serves the same paths, and the audio, from the content directory.
  */
@@ -129,14 +131,15 @@ export function contentPlugin(build: BuildName, base: string, contentDir: string
     resolveId: (id) => (id === VIRTUAL_ID ? `\0${VIRTUAL_ID}` : undefined),
     load(id) {
       if (id !== `\0${VIRTUAL_ID}`) return undefined;
-      const { stories } = load();
+      const { stories, compose } = load();
       this.addWatchFile(join(dir, 'catalog.json'));
+      if (compose) this.addWatchFile(join(dir, 'compose.json'));
       for (const { entry } of stories) {
         this.addWatchFile(join(dir, 'stories', `${entry.route}.json`));
         if (entry.art !== null) this.addWatchFile(join(dir, 'art', entry.art));
       }
       const list = stories.map(({ entry, file, picture }) => ({ ...entry, data: `${base}${file}`, picture: picture && `${base}${picture.file}` }));
-      return `export const BUILD = ${JSON.stringify(build)};\nexport const stories = ${JSON.stringify(list)};\n`;
+      return `export const BUILD = ${JSON.stringify(build)};\nexport const stories = ${JSON.stringify(list)};\nexport const compose = ${JSON.stringify(compose)};\n`;
     },
     generateBundle() {
       const content = load();

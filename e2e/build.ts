@@ -5,6 +5,9 @@ import type { BuildName } from '../src/content.ts';
 export const FAMILY_PORT = 4242;
 export const FAMILY_URL = `http://127.0.0.1:${String(FAMILY_PORT)}`;
 
+/** The family build's content in the e2e runs: the demo with `e2e/compose.json`. */
+export const FAMILY_CONTENT = 'output/e2e/family-content';
+
 export const E2E_OUT: Readonly<Record<BuildName, string>> = { public: 'output/e2e/public', family: 'output/e2e/family' };
 
 /** A build of `content` into the directory the e2e server of that build serves. */

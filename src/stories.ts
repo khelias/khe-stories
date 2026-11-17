@@ -36,12 +36,12 @@ interface Item extends Card {
   text: Promise<Story> | null;
 }
 
-function clock(seconds: number): string {
+export function clock(seconds: number): string {
   const whole = Math.max(0, Math.round(seconds));
   return `${String(Math.floor(whole / 60))}:${String(whole % 60).padStart(2, '0')}`;
 }
 
-function need<T extends Element>(selector: string): T {
+export function need<T extends Element>(selector: string): T {
   const node = document.querySelector<T>(selector);
   if (!node) throw new Error(`index.html has no ${selector}`);
   return node;
@@ -102,6 +102,8 @@ export interface StoriesOptions {
   readonly stories: readonly BuiltStory[];
   readonly text: (key: CopyKey) => string;
   readonly offline: OfflineStore;
+  /** The compose view's hash in the family build, which also keeps the shelf showing; else null. */
+  readonly composeHash: string | null;
 }
 
 export interface Stories {
@@ -109,7 +111,7 @@ export interface Stories {
   readonly showLabels: () => void;
 }
 
-export function startStories({ base, stories: entries, text, offline }: StoriesOptions): Stories {
+export function startStories({ base, stories: entries, text, offline, composeHash }: StoriesOptions): Stories {
   const body = document.body;
   const audio = need<HTMLAudioElement>('[data-story-audio]');
   const seek = need<HTMLInputElement>('[data-player-seek]');
@@ -183,7 +185,7 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
     for (const item of items) if (item !== next) (item.entry.author === null ? family : own).push(item.card);
     list.replaceChildren(...family);
     shelfList.replaceChildren(...own);
-    shelf.hidden = !own.length;
+    shelf.hidden = !own.length && composeHash === null;
   }
 
   function showCard(item: Item): void {
@@ -503,8 +505,9 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
     }
   }
 
-  // One view at a time: the library, or the story whose hash the address holds. Without a
-  // story's hash the library shows, with the open story (or the first) loaded in the player.
+  // One view at a time: the library, the compose view, or the story whose hash the address
+  // holds. Without a story's hash the library or the compose view shows, with the open story
+  // (or the first) loaded in the player.
   // The query the library had when the story was opened from it, or null. Going back through
   // history is right only while it is unchanged: a language switch in between rewrites ?lang
   // in place, and the entry behind holds the old language.
@@ -513,7 +516,7 @@ export function startStories({ base, stories: entries, text, offline }: StoriesO
     const item = itemAt(window.location.hash);
     const target = item ?? open ?? items[0];
     if (target) openStory(target);
-    const view = item ? 'story' : 'library';
+    const view = item ? 'story' : composeHash !== null && window.location.hash === composeHash ? 'compose' : 'library';
     if (body.getAttribute('data-view') !== view) {
       body.setAttribute('data-view', view);
       if (view === 'library') openedFrom = null;

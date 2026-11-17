@@ -59,6 +59,287 @@ jobs:
       - name: E2E tests
         run: npm run test:e2e
 
+  # The request service's image (docs/decisions/002), built and scanned on
+  # every run (estate ADR-008).
+  image:
+    name: Server image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: server
+          load: true
+          tags: khe-stories-server:ci
+          cache-from: type=gha,scope=server
+          cache-to: type=gha,mode=max,scope=server
+
+      # Grype's ignore rules have no expiry of their own (estate ADR-008).
+      - name: Check scan ignore rules have not expired
+        run: |
+          rules=$(yq '.ignore | length' .grype.yaml)
+          if [ "$rules" -eq 0 ]; then exit 0; fi
+          today=$(date -u +%F)
+          status=0
+          while IFS= read -r reason; do
+            case $reason in
+              "until "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]:*) ;;
+              *) echo "::error file=.grype.yaml::reason must start with 'until YYYY-MM-DD:': $reason"; status=1; continue ;;
+            esac
+            until=${reason#until }
+            until=${until%%:*}
+            if [[ "$until" < "$today" ]]; then
+              echo "::error file=.grype.yaml::ignore rule expired on $until: $reason"
+              status=1
+            fi
+          done <<< "$(yq -r '.ignore[] | .reason // ""' .grype.yaml)"
+          exit "$status"
+
+      - name: Export the image for the scanner
+        run: docker save -o server.tar khe-stories-server:ci
+
+      - name: Scan
+        uses: docker://anchore/grype:v0.121.2@sha256:6a36234da13f9faa327306ac0b3dab3405cfa2b4eb20c8f904125a8707863913
+        env:
+          GRYPE_DB_CACHE_DIR: .grype-db
+        with:
+          args: docker-archive:server.tar
+
+  # The only job that can write packages or mint an OIDC token (estate ADR-008).
+  # It builds with no cache: the gha cache can be written by any step holding
+  # the runner's cache token, the scanner container and npm scripts included.
+  publish:
+    name: Publish server image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [quality, image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    concurrency:
+      group: publish-main
+      cancel-in-progress: false
+    outputs:
+      moved: ${{ steps.move.outputs.moved }}
+    env:
+      IMAGE: ghcr.io/khelias/khe-stories-server
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # A re-run of an older commit must not move main backwards.
+      - name: Stop unless this commit is still main's tip
+        id: tip
+        run: |
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$tip" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::main is at $tip, not $GITHUB_SHA; nothing is published from this run"
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Buildx
+        if: steps.tip.outputs.current == 'true'
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GHCR
+        if: steps.tip.outputs.current == 'true'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # A sha- tag is never overwritten, so a rollback pin keeps its digest.
+      # GHCR answers 403 for a package that does not exist yet.
+      - name: Check for an existing sha tag
+        id: existing
+        if: steps.tip.outputs.current == 'true'
+        run: |
+          ref="$IMAGE:sha-$GITHUB_SHA"
+          if out=$(docker buildx imagetools inspect "$ref" 2>&1); then
+            echo "::notice::$ref already exists and is not rebuilt"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          elif grep -qiE 'not found|403 forbidden|denied' <<<"$out"; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "$out" >&2
+            exit 1
+          fi
+
+      - name: Metadata
+        id: meta
+        if: steps.existing.outputs.found == 'false'
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+        with:
+          images: ${{ env.IMAGE }}
+          flavor: latest=false
+          tags: type=sha,format=long
+          labels: org.opencontainers.image.title=khe-stories-server
+
+      - name: Push
+        if: steps.existing.outputs.found == 'false'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: server
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          no-cache: true
+          sbom: true
+          provenance: mode=max
+
+      # Attests the sha- digest when it lacks an attestation, including one
+      # pushed by an earlier attempt whose attest step failed.
+      - name: Find whether the digest is attested
+        id: attested
+        if: steps.tip.outputs.current == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          digest=$(docker buildx imagetools inspect "$IMAGE:sha-$GITHUB_SHA" --format '{{json .Manifest}}' | jq -r .digest)
+          count=$(gh api "repos/$GITHUB_REPOSITORY/attestations/$digest" --jq '.attestations | length' 2>/dev/null || echo 0)
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          if [ "$count" -ge 1 ]; then echo "done=true"; else echo "done=false"; fi >> "$GITHUB_OUTPUT"
+
+      # Storage records exist only for organisation-owned repos; khelias is a
+      # personal account.
+      - name: Attest
+        if: steps.attested.outputs.done == 'false'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.attested.outputs.digest }}
+          push-to-registry: true
+          create-storage-record: false
+
+      - name: Move the main tag
+        id: move
+        if: steps.tip.outputs.current == 'true'
+        run: |
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$tip" != "$GITHUB_SHA" ]; then
+            echo "::notice::main moved on to $tip during this run; its own run moves the main tag"
+            exit 0
+          fi
+          docker buildx imagetools create -t "$IMAGE:main" "$IMAGE:sha-$GITHUB_SHA"
+          main=$(docker buildx imagetools inspect "$IMAGE:main" --format '{{json .Manifest}}' | jq -r .digest)
+          echo "- \`$IMAGE:main@$main\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "moved=true" >> "$GITHUB_OUTPUT"
+
+  # Opens the khe-homelab pin PR with auto-merge through the khe-stories-pins
+  # App (estate ADR-008). Its key is in the homelab-pin environment, which
+  # only main can use; homelab's validate.yml limits what the App may change.
+  pin:
+    name: Pin homelab
+    needs: publish
+    if: needs.publish.outputs.moved == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: homelab-pin
+    permissions:
+      contents: read
+    concurrency:
+      group: pin-homelab
+      cancel-in-progress: false
+    env:
+      IMAGE: ghcr.io/khelias/khe-stories-server
+
+    steps:
+      # secrets.* cannot appear in if:, so later steps gate on this output.
+      - name: Check for the App secrets
+        id: secrets
+        env:
+          CLIENT_ID: ${{ secrets.HOMELAB_PIN_CLIENT_ID }}
+          PRIVATE_KEY: ${{ secrets.HOMELAB_PIN_PRIVATE_KEY }}
+        run: |
+          if [ -n "$CLIENT_ID" ] && [ -n "$PRIVATE_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::homelab-pin has no App secrets; the homelab pin is not moved"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # A re-run of an older commit must not pin backwards.
+      - name: Stop unless GHCR main is this commit
+        id: current
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          main=$(docker buildx imagetools inspect "$IMAGE:main" --format '{{json .Manifest}}' | jq -r .digest)
+          mine=$(docker buildx imagetools inspect "$IMAGE:sha-$GITHUB_SHA" --format '{{json .Manifest}}' | jq -r .digest)
+          if [ "$main" = "$mine" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::main is $main, not sha-$GITHUB_SHA ($mine); a newer run pins"
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Mint the App token
+        id: app
+        if: steps.current.outputs.current == 'true'
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ secrets.HOMELAB_PIN_CLIENT_ID }}
+          private-key: ${{ secrets.HOMELAB_PIN_PRIVATE_KEY }}
+          owner: khelias
+          repositories: khe-homelab
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout
+        if: steps.current.outputs.current == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Checkout khe-homelab
+        if: steps.current.outputs.current == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: khelias/khe-homelab
+          token: ${{ steps.app.outputs.token }}
+          path: homelab
+
+      # The noreply address is assembled here so no file carries it.
+      - name: Commit as the App
+        if: steps.current.outputs.current == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          SLUG: ${{ steps.app.outputs.app-slug }}
+        run: |
+          set -euo pipefail
+          id=$(gh api "users/${SLUG}[bot]" --jq .id)
+          domain=users.noreply.github.com
+          git -C homelab config user.name "${SLUG}[bot]"
+          git -C homelab config user.email "${id}+${SLUG}[bot]@${domain}"
+
+      - name: Open the pin PR
+        if: steps.current.outputs.current == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: scripts/pin-homelab.sh homelab "$GITHUB_SHA"
+
   # Required on pull requests (estate ADR-020): the commits on the branch are
   # scanned with the same rules the local commit gate uses, from khe-workspace
   # at a pinned commit. Move the pin when those rules or the script change.

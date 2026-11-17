@@ -32,8 +32,13 @@ worker deciding by URL). The content contract is
   ([estate ADR-037](https://github.com/khelias/khe-architecture/blob/main/decisions/037-childrens-stories-are-made-by-an-unattended-job.md)).
 - `src/art.ts` - a story's picture as an `<img>`; `src/art/night.svg` is the
   fallback scene for a story without one.
+- `src/compose.ts` - the compose view, `#uus-jutt`, in the family build only
+  when its content has `compose.json`: pairing the phone, a child's request,
+  the recording of her idea, her recent requests and the notification
+  permission. It talks to `server/` under `/api/`.
 - `src/resume.ts` - where listening stopped, `unejanku:v1:pos:<route>`.
-- `src/sw.ts` - the service worker; `build/sw.ts` compiles it per build.
+- `src/sw.ts` - the service worker; `build/sw.ts` compiles it per build. A
+  push wakes it with no payload, and it asks `/api/notices` what to show.
 - `src/shell.css` - the family shell restated; `src/stories.css` - the
   room's own look, outside the design check (estate ADR-028 point 1).
 - `src/copy.ts` - every string, ET and EN.
@@ -45,6 +50,19 @@ worker deciding by URL). The content contract is
   places, and their pictures in `demo/art/`. Its audio is all rights
   reserved (README).
 - `e2e/server.ts` - serves a build as nginx will, for e2e and `preview`.
+  The e2e family build adds `e2e/compose.json` to the demo content.
+- `server/` - the request service
+  ([ADR-002](docs/decisions/002-a-request-service-beside-the-app.md)):
+  TypeScript that Node 26 runs as written, no dependencies. `app.ts` the
+  routes, `service.ts` the queue, the job's report and the deploy's notices,
+  `store.ts` the SQLite state, `auth.ts` pairing
+  ([estate ADR-038](https://github.com/khelias/khe-architecture/blob/main/decisions/038-a-childs-device-is-paired-once-by-a-parent.md)),
+  `push.ts` Web Push, `outbound.ts` GitHub and Gemini, `contract.ts` the
+  limits and states the page and the worker share with it, `notify.ts` the
+  command the stories job and the operator run in its container. A story is
+  ready once the family build's `catalog.json`, mounted read-only, lists it.
+  Its settings are in `server/.env.example`; the family's names and phrase
+  are only in the homelab's `.env`.
 - `reader/` - reads a story aloud (estate ADR-036): `read.py` the command,
   `reading.py` the pieces and pauses, `xtts.py` the TTS run with its Whisper
   and pitch checks, `whisper.py` the Whisper it checks with (mlx-whisper on
@@ -64,10 +82,13 @@ Node 26 (`.nvmrc`), npm.
   elsewhere.
 - `npm run lint` - eslint and `khe-design-lint`.
 - `npm run typecheck`, `npm test` (Vitest: the contract, the resume rules,
-  both builds' output), `npm run test:e2e` (Playwright over both builds:
+  both builds' output, the request service), `npm run test:e2e` (Playwright over both builds:
   offline, Range, the worker's update and prune, resume, the listening view,
-  the mini player, the sleep counter's chain, the family header's language).
+  the mini player, the sleep counter's chain, the family header's language,
+  the compose view against a stubbed `/api/`).
 - `npm run preview` - serves `output/public` with the demo audio.
+- `docker build server` - the request service's image; its tests are in
+  `npm test` (`tests/server.test.ts`).
 - `python3 -m unittest discover -s reader -q` - the reader's tests.
 - `uv run --no-project --python 3.11 --with-requirements reader/requirements.txt python reader/read.py --help` -
   the reader (docs/reader.md "Running it"): Apple silicon, or Linux x86_64
@@ -103,9 +124,17 @@ pins and lock file maintenance (`renovate.json`), through a pull request whose
 required checks pass; `@khelias/ui` is never automerged (estate ADR-014).
 Renovate leaves `reader/` alone (`ignorePaths`): its pins decide how a story
 sounds, so they move by hand, with a new voice tag in the private repo.
-Nothing here deploys: the private stories repo builds the commit its
-`app.ref` names. The way back from a bad update is to revert its merge on
-`main` through a pull request.
+The app does not deploy from here: the private stories repo builds the
+commit its `app.ref` names. The request service does: every merge to `main`
+publishes `ghcr.io/khelias/khe-stories-server` (`sha-<commit>` with SBOM,
+provenance and an attestation, then `main`), and CI's `Pin homelab` job runs
+`scripts/pin-homelab.sh` with the `khe-stories-pins` App's token from the
+`homelab-pin` environment, opening an auto-merging pin PR in khe-homelab
+([estate ADR-008](https://github.com/khelias/khe-architecture/blob/main/decisions/008-container-images.md)),
+whose merge is the deploy. The image job scans with Grype (`.grype.yaml`).
+The way back from a bad update is to revert its merge on `main` through a
+pull request, or to pin the service to an earlier `sha-` digest in
+khe-homelab.
 
 ## Kill-switch
 

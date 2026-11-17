@@ -1,0 +1,30 @@
+# The request service (docs/decisions/002): Node runs the TypeScript as it is, and the service
+# has no dependencies, so the image is the base, the source and nothing else.
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5
+
+# The service never runs a package manager, and the scan gate would otherwise
+# fail on npm's bundled dependencies.
+RUN rm -rf /usr/local/lib/node_modules /opt/yarn-* \
+      /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+      /usr/local/bin/yarn /usr/local/bin/yarnpkg
+
+# CVE-2026-4738: the pinned base still carries an older zlib. Drop this once
+# a node:26-alpine digest ships zlib 1.4-r0.
+RUN apk add --no-cache --upgrade 'zlib>=1.4-r0' tzdata
+
+WORKDIR /app
+ENV NODE_ENV=production \
+    NODE_OPTIONS=--disable-warning=ExperimentalWarning \
+    TZ=Europe/Tallinn
+
+COPY package.json app.ts auth.ts config.ts contract.ts main.ts notify.ts outbound.ts push.ts service.ts store.ts ./
+
+RUN mkdir /data && chown node:node /data
+USER node
+VOLUME /data
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget --spider -q http://127.0.0.1:3000/api/healthz || exit 1
+
+CMD ["node", "main.ts"]
