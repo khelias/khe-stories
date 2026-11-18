@@ -124,7 +124,7 @@ describe('the public build', () => {
   });
 
   it('loads the consent banner from the origin root', () => {
-    expect(html()).toMatch(/<script\s+defer src="\/assets\/analytics-consent\.js" data-analytics-token="[0-9a-f]+"/);
+    expect(html()).toMatch(/<script\s+async src="\/assets\/analytics-consent\.js" data-analytics-token="[0-9a-f]+"/);
   });
 
   it('is a product page: its view script in <head> before the first stylesheet, and the demo line', () => {

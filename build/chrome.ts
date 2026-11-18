@@ -51,7 +51,7 @@ function head(build: BuildName): string {
     `<meta name="twitter:description" content="${etHtml('description')}">`,
     '<meta name="twitter:image" content="https://khe.ee/og-image.png">',
     // The consent banner from the origin root, as every khe.ee page loads it (estate ADR-019).
-    `<script vite-ignore defer src="/assets/analytics-consent.js" data-analytics-token="${ANALYTICS_TOKEN}" data-analytics-privacy-url="/privacy?lang=et"></script>`,
+    `<script vite-ignore async src="/assets/analytics-consent.js" data-analytics-token="${ANALYTICS_TOKEN}" data-analytics-privacy-url="/privacy?lang=et"></script>`,
   ].join('\n  ');
 }
 
