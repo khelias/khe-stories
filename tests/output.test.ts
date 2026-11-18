@@ -52,17 +52,34 @@ beforeAll(async () => {
 });
 
 describe.each(['public', 'family'] as const)('the %s build', (name) => {
+  const { base } = BUILDS[name];
   const html = () => readFileSync(join(outputs[name], 'index.html'), 'utf8');
+  const readManifest = () => JSON.parse(readFileSync(join(outputs[name], 'manifest.webmanifest'), 'utf8')) as Record<string, unknown> & { icons: { src: string; sizes: string; purpose?: string }[] };
 
   it('is committed to the dark theme, in its theme-color and its manifest', () => {
     expect(html()).toContain('data-theme="dark"');
     expect(count(html(), /<meta name="theme-color"/g)).toBe(1);
     expect(html()).toContain(`<meta name="theme-color" content="${PAPER}">`);
-    const manifest = JSON.parse(readFileSync(join(outputs[name], 'manifest.webmanifest'), 'utf8')) as Record<string, unknown>;
+    const manifest = readManifest();
     expect(manifest.background_color).toBe(PAPER);
     expect(manifest.theme_color).toBe(PAPER);
-    const { base } = BUILDS[name];
     expect([manifest.scope, manifest.start_url, manifest.name]).toEqual([base, base, COPY.et.appName]);
+  });
+
+  it('installs with its icons, the maskable one apart, and a status bar over its own paper', () => {
+    const icons = [['icon-192.png', 192, undefined], ['icon-512.png', 512, undefined], ['icon-maskable-512.png', 512, 'maskable']] as const;
+    expect(readManifest().icons.map(({ src, sizes, purpose }) => [src, sizes, purpose])).toEqual(
+      icons.map(([file, size, purpose]) => [`${base}${file}`, `${String(size)}x${String(size)}`, purpose]),
+    );
+    // A PNG's width, height and colour type are at fixed offsets of its IHDR chunk; type 2 has no alpha.
+    for (const [file, size] of [['icon-180.png', 180], ...icons] as const) {
+      const png = readFileSync(join(outputs[name], file));
+      expect([png.readUInt32BE(16), png.readUInt32BE(20), png[25]]).toEqual([size, size, 2]);
+    }
+    const page = html();
+    expect(page).toContain(`<link rel="apple-touch-icon" href="${base}icon-180.png">`);
+    expect(page).toContain('<meta name="apple-mobile-web-app-capable" content="yes">');
+    expect(page).toContain('<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">');
   });
 
   it('has every copy key it uses in both languages', () => {

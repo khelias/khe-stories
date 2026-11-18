@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { parseCatalog } from '../src/content.ts';
 import { audioCacheName, isShellCache } from '../src/offline-names.ts';
 import { buildE2e } from './build.ts';
+import { saveStory } from './save.ts';
 
 const catalog = parseCatalog(JSON.parse(readFileSync('demo/catalog.json', 'utf8')));
 const [long, short] = catalog.stories.filter((story) => story.audio !== null);
@@ -20,13 +21,6 @@ async function openControlled(page: Page, path = '/stories/'): Promise<void> {
   await expect(page.locator('.story-card')).toHaveCount(catalog.stories.length);
 }
 
-async function save(page: Page, route: string): Promise<void> {
-  await page.goto(`/stories/#${route}`);
-  const button = page.locator('[data-save-button]');
-  await button.click();
-  await expect(button).toHaveAttribute('aria-pressed', 'true');
-}
-
 test('the library renders offline after a reload', async ({ page, context }) => {
   await openControlled(page);
   await context.setOffline(true);
@@ -38,7 +32,7 @@ test('the library renders offline after a reload', async ({ page, context }) => 
 
 test('a saved story plays offline and seeks to 60 s', async ({ page, context }) => {
   await openControlled(page);
-  await save(page, long.route);
+  await saveStory(page, `/stories/#${long.route}`);
   await page.goto('/stories/');
   await expect(page.locator(`.story-card[href="#${long.route}"] [data-card-saved]`)).toBeVisible();
   await context.setOffline(true);
@@ -68,7 +62,7 @@ test('a saved story plays offline and seeks to 60 s', async ({ page, context }) 
 
 test('a Range request to a saved story answers 206 with 100 bytes', async ({ page }) => {
   await openControlled(page);
-  await save(page, long.route);
+  await saveStory(page, `/stories/#${long.route}`);
   const answer = await page.evaluate(async (sha) => {
     const response = await fetch(`/stories/saved/${sha}.m4a`, { headers: { Range: 'bytes=100-199' } });
     return { status: response.status, range: response.headers.get('content-range'), length: (await response.arrayBuffer()).byteLength };
@@ -87,7 +81,7 @@ test('unsaved audio does not go through the service worker', async ({ page }) =>
 
 test('an update without a story removes its text and saved audio', async ({ page }) => {
   await openControlled(page);
-  await save(page, long.route);
+  await saveStory(page, `/stories/#${long.route}`);
   const before = await page.evaluate(() => caches.keys());
   const content = mkdtempSync(join(tmpdir(), 'stories-e2e-'));
   cpSync('demo', content, { recursive: true });

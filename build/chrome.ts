@@ -135,7 +135,7 @@ function footer(build: BuildName, indent: string): string {
 }
 
 function manifest(base: string): string {
-  const icon = (size: number) => ({ src: `${base}icon-${String(size)}.png`, sizes: `${String(size)}x${String(size)}`, type: 'image/png' });
+  const icon = (size: number, stem = 'icon') => ({ src: `${base}${stem}-${String(size)}.png`, sizes: `${String(size)}x${String(size)}`, type: 'image/png' });
   return `${JSON.stringify(
     {
       name: et('appName'),
@@ -148,7 +148,7 @@ function manifest(base: string): string {
       display: 'standalone',
       background_color: PAPER,
       theme_color: PAPER,
-      icons: [icon(180), { ...icon(512), purpose: 'any maskable' }],
+      icons: [icon(192), icon(512), { ...icon(512, 'icon-maskable'), purpose: 'maskable' }],
     },
     null,
     2,
