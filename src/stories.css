@@ -43,10 +43,28 @@ body.stories-page {
   --row: rgb(255 255 255 / 0.08);
   --art: #121a33;
   --edge: 16px;
+  --bar-rest: 16px;
+  --bar-top: max(var(--bar-rest), env(safe-area-inset-top));
   --dock-space: 15rem;
   background: var(--night);
   color: var(--label);
   font-family: var(--system);
+}
+
+/* The translucent status bar has no backing, so its white clock needs one over scrolled text. */
+body.stories-page::before {
+  content: "";
+  position: fixed;
+  z-index: 60;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top);
+  background: rgb(4 10 26 / 0.85);
+  pointer-events: none;
+}
+
+/* Below the public build's header the story page is already clear of the status bar. */
+.site-header ~ .stories-app .story {
+  --bar-in-page: var(--bar-rest);
 }
 
 .stories-page svg {
@@ -115,16 +133,19 @@ body.stories-page {
 }
 
 /* The family build's own header (estate ADR-032). */
+/* The top inset is padding, not margin: a margin would collapse through the body and push the
+   sky down from under the status bar. */
 .app-header {
+  --header-top: max(12px, env(safe-area-inset-top));
   position: relative;
   z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   max-width: 1232px;
-  height: 52px;
-  margin: max(12px, env(safe-area-inset-top)) auto 0;
-  padding: 0 max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
+  height: calc(52px + var(--header-top));
+  margin: 0 auto;
+  padding: var(--header-top) max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
 }
 
 [data-view="story"] .app-header {
@@ -175,10 +196,12 @@ body.stories-page {
   color: var(--label);
 }
 
-/* The public build's family header sits on the sky. */
+/* The public build's family header sits on the sky, and clear of the installed app's
+   translucent status bar, which the shared header does not allow for. */
 .stories-page .site-header {
   position: relative;
   z-index: 2;
+  padding-top: env(safe-area-inset-top);
 }
 
 /* Library */
@@ -876,7 +899,7 @@ body[data-playing] .icon-pause {
 .story-bar {
   position: absolute;
   z-index: 5;
-  top: max(16px, env(safe-area-inset-top));
+  top: var(--bar-in-page, var(--bar-top));
   left: max(var(--edge), env(safe-area-inset-left));
   right: max(var(--edge), env(safe-area-inset-right));
   display: flex;
@@ -895,7 +918,7 @@ body[data-playing] .icon-pause {
 .story-save-error {
   position: absolute;
   z-index: 5;
-  top: calc(max(16px, env(safe-area-inset-top)) + 48px);
+  top: calc(var(--bar-in-page, var(--bar-top)) + 48px);
   right: max(var(--edge), env(safe-area-inset-right));
   padding: 6px 12px;
   border-radius: 12px;
@@ -1005,7 +1028,7 @@ body[data-playing] .icon-pause {
   right: 0;
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr) 36px;
-  padding: max(16px, env(safe-area-inset-top)) max(var(--edge), env(safe-area-inset-right)) 12px max(var(--edge), env(safe-area-inset-left));
+  padding: var(--bar-top) max(var(--edge), env(safe-area-inset-right)) 12px max(var(--edge), env(safe-area-inset-left));
   background: linear-gradient(rgb(4 10 26 / 0.85), rgb(4 10 26 / 0));
 }
 
@@ -1322,6 +1345,10 @@ body[data-playing] .icon-pause {
 /* Desktop: the library at 1200px, the hero text left and picture right, four covers a row;
    the listening view in two columns, picture and controls left, text right. */
 @media (min-width: 960px) {
+  body.stories-page {
+    --bar-rest: 28px;
+  }
+
   .library-sky {
     height: 560px;
     -webkit-mask: linear-gradient(#000 35%, transparent);
@@ -1329,8 +1356,8 @@ body[data-playing] .icon-pause {
   }
 
   .app-header {
-    height: 88px;
-    margin-top: 0;
+    --header-top: env(safe-area-inset-top);
+    height: calc(88px + var(--header-top));
   }
 
   .app-brand {
@@ -1424,12 +1451,11 @@ body[data-playing] .icon-pause {
   .story-bar {
     left: max(40px, env(safe-area-inset-left));
     right: max(40px, env(safe-area-inset-right));
-    top: 28px;
   }
 
   [data-listening] .story-bar {
     top: 0;
-    padding: 28px 40px 16px;
+    padding: var(--bar-top) 40px 16px;
     grid-template-columns: 40px minmax(0, 1fr) 40px;
   }
 

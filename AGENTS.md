@@ -40,6 +40,10 @@ worker deciding by URL). The content contract is
 - `src/sw.ts` - the service worker; `build/sw.ts` compiles it per build. A
   push wakes it with no payload, and it asks `/api/notices` what to show;
   `src/notices.ts` shows the newest notice of each story.
+- `public/icon.svg` - the app icon's master. `icon-180.png` (opaque, for iOS),
+  `icon-192.png` and `icon-512.png` are rendered from it with `rsvg-convert`,
+  and `icon-maskable-512.png` from its artwork at 80% on the same background
+  ([estate ADR-041](https://github.com/khelias/khe-architecture/blob/main/decisions/041-installed-apps-stay-on-their-paths-with-a-worker-each.md)).
 - `src/shell.css` - the family shell restated; `src/stories.css` - the
   room's own look, outside the design check (estate ADR-028 point 1).
 - `src/copy.ts` - every string, ET and EN.
@@ -86,7 +90,7 @@ Node 26 (`.nvmrc`), npm.
 - `npm run lint` - eslint and `khe-design-lint`.
 - `npm run typecheck`, `npm test` (Vitest: the contract, the resume rules,
   both builds' output, the request service), `npm run test:e2e` (Playwright over both builds:
-  offline, Range, the worker's update and prune, resume, the listening view,
+  offline, Range, the worker's update and prune, the kill-switch, resume, the listening view,
   the mini player, the sleep counter's chain, the family header's language,
   the compose view against a stubbed `/api/`).
 - `npm run preview` - serves `output/public` with the demo audio.
@@ -141,9 +145,13 @@ khe-homelab.
 
 ## Kill-switch
 
+`sw.js` stays at its URL for good
+([estate ADR-041](https://github.com/khelias/khe-architecture/blob/main/decisions/041-installed-apps-stay-on-their-paths-with-a-worker-each.md)):
+a deleted file falls through to `index.html` and the old worker keeps running.
 If a deployed worker misbehaves, replace `sw.js` in the build's output with
 this and deploy; every visitor's worker updates to it on the next visit,
-removes the app's caches and unregisters itself:
+removes the app's caches and unregisters itself. `e2e/kill-switch.spec.ts`
+runs this block as written, over both builds:
 
 ```js
 self.addEventListener('install', () => self.skipWaiting());
