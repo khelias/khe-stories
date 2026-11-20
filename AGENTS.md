@@ -44,8 +44,10 @@ worker deciding by URL). The content contract is
   `icon-192.png` and `icon-512.png` are rendered from it with `rsvg-convert`,
   and `icon-maskable-512.png` from its artwork at 80% on the same background
   ([estate ADR-041](https://github.com/khelias/khe-architecture/blob/main/decisions/041-installed-apps-stay-on-their-paths-with-a-worker-each.md)).
-- `src/shell.css` - the family shell restated; `src/stories.css` - the
-  room's own look, outside the design check (estate ADR-028 point 1).
+- `src/shell.css` - the family shell restated, in Familjen Grotesk
+  ([estate ADR-049](https://github.com/khelias/khe-architecture/blob/main/decisions/049-the-familys-type-is-familjen-grotesk.md));
+  `src/stories.css` - the room's own look with its Source Serif 4 faces,
+  outside the design check (estate ADR-028 point 1).
 - `src/copy.ts` - every string, ET and EN.
 - `src/builds.ts` `siteLinks` - the links the `data-link` attributes name, set
   per language by `locale.ts`; `family` is the demo line's link to
