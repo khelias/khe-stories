@@ -8,9 +8,10 @@ RUN rm -rf /usr/local/lib/node_modules /opt/yarn-* \
       /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
       /usr/local/bin/yarn /usr/local/bin/yarnpkg
 
-# CVE-2026-4738: the pinned base still carries an older zlib. Drop this once
-# a node:26-alpine digest ships zlib 1.4-r0.
-RUN apk add --no-cache --upgrade 'zlib>=1.4-r0' tzdata
+# The pinned base still carries an older zlib (CVE-2026-4738) and OpenSSL
+# (CVE-2026-95691, -95692, -88823, -107496). Drop the pins once a
+# node:26-alpine digest ships zlib 1.4-r0 and OpenSSL 3.5.9-r1.
+RUN apk add --no-cache --upgrade 'zlib>=1.4-r0' 'libssl3>=3.5.9-r1' 'libcrypto3>=3.5.9-r1' tzdata
 
 WORKDIR /app
 ENV NODE_ENV=production \
