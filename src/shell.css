@@ -1,7 +1,7 @@
 /* The KHE family shell this app sits in: the package's header and footer, and what the page
    took from khe-sites, restated here as khe-trips restates its own: the font, the family
    tokens the room uses (khe-sites DESIGN.md), the header and footer values, and the base
-   rules of site.css the page relied on. Committed to the dark theme (estate ADR-021 point 2),
+   rules of site.css the page relied on. Committed to the dark theme (estate ADR-035 point 2),
    so only the dark values are kept. */
 @import '@khelias/ui/site-header.css';
 @import '@khelias/ui/site-footer.css';
@@ -45,7 +45,7 @@
   --khe-header-font: var(--sans);
   --khe-header-title-weight: 500;
   --khe-header-max-width: 1080px;
-  /* Transparent over the library's sky (estate ADR-032 point 3). */
+  /* Transparent over the library's sky (estate ADR-035 point 12). */
   --khe-header-bg: transparent;
   --khe-header-blur: 0px;
   --khe-header-border: var(--rule);

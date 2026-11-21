@@ -1,7 +1,7 @@
 # ADR-001: Unejänku is a Vite and TypeScript app without a framework, shelled by @khelias/ui, fed through one content contract
 
 - **Status:** Accepted (2026-11-16)
-- **Related:** [estate ADR-031](https://github.com/khelias/khe-architecture/blob/main/decisions/031-stories-public-app-private-stories-audio-outside-git.md) (why the code is here and the stories are not), [estate ADR-028](https://github.com/khelias/khe-architecture/blob/main/decisions/028-the-stories-room-keeps-its-own-look.md) (its own look), [estate ADR-030](https://github.com/khelias/khe-architecture/blob/main/decisions/030-the-portfolio-frame-and-the-product-view.md) (the product view), [estate ADR-021](https://github.com/khelias/khe-architecture/blob/main/decisions/021-family-shell-and-design-check.md) (the family shell and the design check), [estate ADR-032](https://github.com/khelias/khe-architecture/blob/main/decisions/032-unejanku-owns-its-header-and-footer.md) (replaces point 3 for the family build: its own header and footer), [estate ADR-033](https://github.com/khelias/khe-architecture/blob/main/decisions/033-story-pictures-are-content.md) (point 4: the contract carries each story's picture)
+- **Related:** [estate ADR-031](https://github.com/khelias/khe-architecture/blob/main/decisions/031-stories-public-app-private-stories-audio-outside-git.md) (why the code is here and the stories are not; point 13: the contract carries each story's picture), [estate ADR-035](https://github.com/khelias/khe-architecture/blob/main/decisions/035-family-shell-and-design-check-with-its-exceptions.md) (the family shell and the design check; point 10: its own look; point 11: the product view; point 12: the family build's own header and footer)
 
 ## Context
 
@@ -58,7 +58,7 @@ component model, and its state is one open story and one audio element.
 
 ## Consequences
 
-- The look is this repo's (estate ADR-028 point 1). `src/stories.css` and the
+- The look is this repo's (estate ADR-035 point 10). `src/stories.css` and the
   drawings are outside the design check; `src/shell.css` is inside it.
 - A change to the shell's values in khe-sites does not reach this app by
   itself; it is restated here when wanted, as in khe-trips.

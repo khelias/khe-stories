@@ -1,8 +1,8 @@
-/* Unejänku. Its own look (estate ADR-028 point 1, extended to stories.khe.ee by estate
-   ADR-031), with its own header and footer in the family build (estate ADR-032): a night
-   sky, each story's picture as its cover, large rounded cards, the reading serif, and a
-   listening view where the picture blurs behind the lines being read. Committed to the dark
-   theme (estate ADR-021 point 2): a bedtime story is listened to in a dark room. */
+/* Unejänku. Its own look on both builds (estate ADR-035 point 10), with its own header and
+   footer in the family build (estate ADR-035 point 12): a night sky, each story's picture as
+   its cover, large rounded cards, the reading serif, and a listening view where the picture
+   blurs behind the lines being read. Committed to the dark theme (estate ADR-035 point 2): a
+   bedtime story is listened to in a dark room. */
 
 @font-face {
   font-family: 'Source Serif 4';
@@ -150,7 +150,7 @@ body.stories-page::before {
   object-position: 50% 0;
 }
 
-/* The family build's own header (estate ADR-032). */
+/* The family build's own header (estate ADR-035 point 12). */
 /* The top inset is padding, not margin: a margin would collapse through the body and push the
    sky down from under the status bar. */
 .app-header {
@@ -705,7 +705,7 @@ body.stories-page::before {
   text-decoration: underline;
 }
 
-/* The page's end: the family footer (estate ADR-032) over the hill of the night scene. */
+/* The page's end: the family footer (estate ADR-035 point 12) over the hill of the night scene. */
 .app-footer {
   position: relative;
   isolation: isolate;

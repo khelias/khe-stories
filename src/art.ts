@@ -1,4 +1,4 @@
-// A story's picture: its own file from the content (estate ADR-033), or the fallback night
+// A story's picture: its own file from the content (estate ADR-031 point 10), or the fallback night
 // scene. Always an <img>, never inline, so nothing in a file reaches the page.
 import fallback from './art/night.svg';
 
