@@ -1,7 +1,7 @@
 # ADR-002: A small request service beside the app, in TypeScript on Node with no framework and a local SQLite file
 
 - **Status:** Accepted (2026-11-17)
-- **Related:** [estate ADR-037](https://github.com/khelias/khe-architecture/blob/main/decisions/037-childrens-stories-are-made-by-an-unattended-job.md) (what the service is for), [estate ADR-038](https://github.com/khelias/khe-architecture/blob/main/decisions/038-a-childs-device-is-paired-once-by-a-parent.md) (pairing, written here first), [estate ADR-008](https://github.com/khelias/khe-architecture/blob/main/decisions/008-container-images.md) (the image), [estate ADR-009](https://github.com/khelias/khe-architecture/blob/main/decisions/009-backend-language-per-app.md) (the backend language per app), [ADR-001](001-unejanku-app.md) (the app it sits beside)
+- **Related:** [estate ADR-037](https://github.com/khelias/khe-architecture/blob/main/decisions/037-childrens-stories-are-made-by-an-unattended-job.md) (what the service is for), [estate ADR-038](https://github.com/khelias/khe-architecture/blob/main/decisions/038-a-childs-device-is-paired-once-by-a-parent.md) (pairing, written here first), [estate ADR-008](https://github.com/khelias/khe-architecture/blob/main/decisions/008-container-images.md) (the image), [estate ADR-004](https://github.com/khelias/khe-architecture/blob/main/decisions/004-app-backend-and-identity.md) point 7 (the backend language per app), [ADR-001](001-unejanku-app.md) (the app it sits beside)
 
 ## Context
 

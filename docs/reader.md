@@ -11,7 +11,8 @@ later choice of voice or model starts from here.
 The reader holds no content. The private stories repo passes the story, the
 voice clips, the subtitle read after each title and the Whisper prompt, and
 builds the reader from the same commit as the app
-([estate ADR-036](https://github.com/khelias/khe-architecture/blob/main/decisions/036-the-stories-reader-is-app-code.md)).
+([estate ADR-031](https://github.com/khelias/khe-architecture/blob/main/decisions/031-stories-public-app-private-stories-audio-outside-git.md)
+point 14).
 
 ## Running it
 

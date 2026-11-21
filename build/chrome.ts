@@ -7,8 +7,8 @@ import { COPY, type CopyKey } from '../src/copy.ts';
 import type { BuildName } from '../src/content.ts';
 
 // The public build is a product page of khe.ee in the family header and footer (estate
-// ADR-030); the family build on stories.khe.ee shows only the product view, set on <html>
-// (estate ADR-031), with the app's own header and footer (estate ADR-032).
+// ADR-035 point 11); the family build on stories.khe.ee shows only the product view, set on
+// <html> (estate ADR-031), with the app's own header and footer (estate ADR-035 point 12).
 const PUBLIC_URL = `https://khe.ee${BUILDS.public.base}`;
 // Cloudflare Web Analytics' site token, public by design: the beacon sends it from every page.
 const ANALYTICS_TOKEN = '58734ed4ae1e4b4e8a8f8f7d50ff74f2';
@@ -55,7 +55,7 @@ function head(build: BuildName): string {
   ].join('\n  ');
 }
 
-/** The public build's family header (estate ADR-030), with the frame and the product view. */
+/** The public build's family header (estate ADR-035 point 11), with the frame and the product view. */
 function header(base: string, indent: string): string {
   return renderSiteHeader({
     brand: { href: siteLinks('public').home('et'), label: et('headerHomeLanding') },
@@ -83,7 +83,7 @@ function header(base: string, indent: string): string {
 
 const BUNNY = '<svg viewBox="0 0 104 120" aria-hidden="true" focusable="false"><path d="M38 62c-8-14-11-34-6-48 3-8 11-8 13 1 3 12 1 32-2 46M66 62c8-14 11-34 6-48-3-8-11-8-13 1-3 12-1 32 2 46M52 112c-19 0-30-10-30-25s13-27 30-27 30 12 30 27-11 25-30 25z"/></svg>';
 
-/** The family build's own header (estate ADR-032): the bunny, the app's name, the language. */
+/** The family build's own header (estate ADR-035 point 12): the bunny, the app's name, the language. */
 export function renderStoriesHeader(base: string, indent: string): string {
   const lang = (code: string, label: string, pressed: boolean) =>
     `<button type="button" lang="${code}" aria-pressed="${String(pressed)}" data-lang-option="${code}">${label}</button>`;
@@ -95,7 +95,7 @@ export function renderStoriesHeader(base: string, indent: string): string {
   ].map((line) => `${indent}${line}`).join('\n');
 }
 
-/** The family build's own footer (estate ADR-032): the voice credit, privacy and KHE.ee. */
+/** The family build's own footer (estate ADR-035 point 12): the voice credit, privacy and KHE.ee. */
 export function renderStoriesFooter(build: BuildName, indent: string): string {
   const links = siteLinks(build);
   return [

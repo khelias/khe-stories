@@ -18,7 +18,7 @@ worker deciding by URL). The content contract is
 - `src/index.html` - the page; `build/chrome.ts` fills its markers per build:
   the family header and footer in the public build, the app's own
   (`renderStoriesHeader`, `renderStoriesFooter`) in the family build
-  ([estate ADR-032](https://github.com/khelias/khe-architecture/blob/main/decisions/032-unejanku-owns-its-header-and-footer.md)).
+  ([estate ADR-035](https://github.com/khelias/khe-architecture/blob/main/decisions/035-family-shell-and-design-check-with-its-exceptions.md) point 12).
 - `src/main.ts` starts `offline.ts` (the worker's registration and saving),
   `stories.ts` (library with its hero and grid, the story page that turns into
   the listening view, the mini player) and `locale.ts`.
@@ -27,7 +27,8 @@ worker deciding by URL). The content contract is
   handler) and the dim over the last one's final minute.
 - `src/content.ts` - the contract's types and checks, shared with the build,
   `checkArt` among them: the allowlist every story picture passes
-  ([estate ADR-033](https://github.com/khelias/khe-architecture/blob/main/decisions/033-story-pictures-are-content.md)),
+  ([estate ADR-031](https://github.com/khelias/khe-architecture/blob/main/decisions/031-stories-public-app-private-stories-audio-outside-git.md)
+  point 13),
   and `checkWebp` for the raster pictures of the children's shelf
   ([estate ADR-037](https://github.com/khelias/khe-architecture/blob/main/decisions/037-childrens-stories-are-made-by-an-unattended-job.md)).
 - `src/art.ts` - a story's picture as an `<img>`; `src/art/night.svg` is the
@@ -45,14 +46,14 @@ worker deciding by URL). The content contract is
   and `icon-maskable-512.png` from its artwork at 80% on the same background
   ([estate ADR-041](https://github.com/khelias/khe-architecture/blob/main/decisions/041-installed-apps-stay-on-their-paths-with-a-worker-each.md)).
 - `src/shell.css` - the family shell restated, in Familjen Grotesk
-  ([estate ADR-049](https://github.com/khelias/khe-architecture/blob/main/decisions/049-the-familys-type-is-familjen-grotesk.md));
+  ([khe-sites `DESIGN.md` "Typography"](https://github.com/khelias/khe-sites/blob/main/DESIGN.md#typography));
   `src/stories.css` - the room's own look with its Source Serif 4 faces,
-  outside the design check (estate ADR-028 point 1).
+  outside the design check (estate ADR-035 point 10).
 - `src/copy.ts` - every string, ET and EN.
 - `src/builds.ts` `siteLinks` - the links the `data-link` attributes name, set
   per language by `locale.ts`; `family` is the demo line's link to
   stories.khe.ee, in the public build only
-  ([estate ADR-034](https://github.com/khelias/khe-architecture/blob/main/decisions/034-the-demo-line-links-the-real-site.md)).
+  ([khe-ui ADR-006](https://github.com/khelias/khe-ui/blob/main/docs/adr/006-the-demo-line-links-the-real-site.md)).
 - `demo/` - the demo content: invented stories, no family names, no real
   places, and their pictures in `demo/art/`. Its audio is all rights
   reserved (README).
@@ -72,7 +73,7 @@ worker deciding by URL). The content contract is
   request starts only after that.
   Its settings are in `server/.env.example`; the family's names and phrase
   are only in the homelab's `.env`.
-- `reader/` - reads a story aloud (estate ADR-036): `read.py` the command,
+- `reader/` - reads a story aloud (estate ADR-031 point 14): `read.py` the command,
   `reading.py` the pieces and pauses, `xtts.py` the TTS run with its Whisper
   and pitch checks, `whisper.py` the Whisper it checks with (mlx-whisper on
   Apple silicon, faster-whisper elsewhere), `pcm.py` silence and AAC, every

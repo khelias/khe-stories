@@ -137,7 +137,7 @@ describe('the public build', () => {
     expect(html()).toContain('data-khe-room="stories"');
   });
 
-  it('links the family build from the demo line, in the page\'s language (estate ADR-034)', () => {
+  it('links the family build from the demo line, in the page\'s language (khe-ui ADR-006)', () => {
     expect(count(html(), /class="site-header__demo-link"/g)).toBe(1);
     expect(html()).toMatch(/<a class="site-header__demo-link" href="https:\/\/stories\.khe\.ee\/\?lang=et" data-i18n="headerDemoLink" data-link="family">Perele →<\/a>/);
   });
@@ -217,7 +217,7 @@ describe('the family build', () => {
     expect(html()).toContain('<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">');
   });
 
-  it('has its own header and footer, not the family ones (estate ADR-032)', () => {
+  it('has its own header and footer, not the family ones (estate ADR-035 point 12)', () => {
     expect(html()).not.toMatch(/site-header|site-footer/);
     expect(count(html(), /<header class="app-header"/g)).toBe(1);
     expect(count(html(), /<footer class="app-footer"/g)).toBe(1);

@@ -74,8 +74,8 @@ deploy and its leak check. The page itself takes the catalog from its bundle.
 
 ## art/&lt;name&gt;.webp
 
-A raster picture, for a story on the children's shelf (estate ADR-037,
-which amends ADR-033 point 1 for that shelf). The app draws it with `<img>`
+A raster picture, for a story on the children's shelf (estate ADR-037
+point 6, which amends estate ADR-031 point 10 for that shelf). The app draws it with `<img>`
 as it does an SVG, and the build writes it as a hashed asset. `checkWebp` in
 `src/content.ts` reads only the header:
 
@@ -108,7 +108,8 @@ it for the family build only.
 ## art/&lt;name&gt;.svg
 
 A story's picture (estate
-[ADR-033](https://github.com/khelias/khe-architecture/blob/main/decisions/033-story-pictures-are-content.md)):
+[ADR-031](https://github.com/khelias/khe-architecture/blob/main/decisions/031-stories-public-app-private-stories-audio-outside-git.md)
+points 10-13):
 the library cover, the story page's header and the player's tile. The app
 draws it with `<img>`, never inline, and the build writes it as a hashed asset
 (`assets/<name>-<hash>.svg`) beside the story's JSON, so the service worker
@@ -154,6 +155,11 @@ build, `/` for the family build):
   `unejanku-audio-<build>`, the whole file, fetched without `Range`), with
   `Range` answered by slicing it. Where the cache has no copy, the worker
   fetches `audio/` instead. Without a worker the path does not exist.
+  Slicing the stored response is the only way it plays: never a `blob:` URL,
+  which has regressed on iOS.
+- When a new worker activates, it deletes every saved copy whose sha256 its
+  build no longer holds, so a withdrawn story leaves a device at its next
+  visit online.
 
 A story whose audio is `null`, or whose audio answers an error, shows its text
 with "Ettelugemist praegu ei ole".

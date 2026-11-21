@@ -6,7 +6,7 @@ export interface BuildSettings {
   readonly base: string;
   /** How the build links khe.ee: from its own origin, or by full address. */
   readonly site: string;
-  /** khe.ee's frame and product view (estate ADR-030); the family build shows only the product. */
+  /** khe.ee's frame and product view (estate ADR-035 point 11); the family build shows only the product. */
   readonly frame: boolean;
 }
 

@@ -180,7 +180,7 @@ export function storiesFor(build: BuildName, catalog: Catalog): readonly Catalog
   return build === 'public' ? catalog.stories.filter((story) => story.published !== null) : catalog.stories;
 }
 
-// The picture check (docs/content.md, estate ADR-033). The files are served from the app's
+// The picture check (docs/content.md, estate ADR-031 point 13). The files are served from the app's
 // own origin, where an SVG opened by itself is a page, so this is an allowlist over a strict
 // tokenizer: anything it does not recognise fails, rather than a ban list that a construct
 // it has not heard of slips past.
