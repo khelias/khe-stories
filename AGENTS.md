@@ -129,9 +129,12 @@ yet.
 Automated writers
 ([estate ADR-007](https://github.com/khelias/khe-architecture/blob/main/decisions/007-automated-writers.md)):
 Renovate automerges npm patch and minor updates of stable packages, 0.x
-patches of devDependencies, GitHub Actions minor and patch updates, digests,
-pins and lock file maintenance (`renovate.json`), through a pull request whose
-required checks pass; `@khelias/ui` is never automerged (estate ADR-014).
+patches of devDependencies, GitHub Actions minor and patch updates, digests
+and pins (`renovate.json`), through a pull request whose required checks
+pass; an npm or Actions update waits until its release is three days old,
+lock file maintenance waits for a merge by hand, the Grype image scanner
+never automerges and waits seven days (estate ADR-008), and `@khelias/ui`
+is never automerged (estate ADR-014).
 Renovate leaves `reader/` alone (`ignorePaths`): its pins decide how a story
 sounds, so they move by hand, with a new voice tag in the private repo.
 The app does not deploy from here: the private stories repo builds the
