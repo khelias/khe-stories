@@ -214,12 +214,10 @@ body.stories-page::before {
   color: var(--label);
 }
 
-/* The public build's family header sits on the sky, and clear of the installed app's
-   translucent status bar, which the shared header does not allow for. */
+/* The public build's family header sits on the sky; @khelias/ui handles the top safe-area inset. */
 .stories-page .site-header {
   position: relative;
   z-index: 2;
-  padding-top: env(safe-area-inset-top);
 }
 
 /* Library */
@@ -750,7 +748,8 @@ body.stories-page::before {
 }
 
 .stories-page .site-footer {
-  padding: 2rem max(24px, env(safe-area-inset-right)) 2.5rem max(24px, env(safe-area-inset-left));
+  margin-top: 2rem;
+  padding: 1.25rem max(24px, env(safe-area-inset-right)) 2.5rem max(24px, env(safe-area-inset-left));
 }
 
 body[data-started] .app-footer,
