@@ -60,4 +60,5 @@ publishing. The request service ships as its own container image, which
 
 The code is MIT-licensed ([LICENSE](LICENSE)). The demo audio in `demo/audio/`
 is not: it is read by Pocket TTS Estonian in a voice cloned, with permission,
-from the children's dad reading aloud, and all rights to it are reserved.
+from the children's dad reading aloud, and all rights to it are reserved
+([demo/audio/LICENSE](demo/audio/LICENSE)).

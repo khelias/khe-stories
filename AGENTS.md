@@ -56,7 +56,7 @@ worker deciding by URL). The content contract is
   ([khe-ui ADR-006](https://github.com/khelias/khe-ui/blob/main/docs/decisions/006-the-demo-line-links-the-real-site.md)).
 - `demo/` - the demo content: invented stories, no family names, no real
   places, and their pictures in `demo/art/`. Its audio is all rights
-  reserved (README).
+  reserved (`demo/audio/LICENSE`).
 - `e2e/server.ts` - serves a build as nginx will, for e2e and `preview`.
   The e2e family build adds `e2e/compose.json` to the demo content.
 - `server/` - the request service
