@@ -42,7 +42,6 @@ export function startLocale(links: Readonly<Record<string, (locale: Locale) => s
     for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) {
       document.querySelector(selector)?.setAttribute('content', copy.title);
     }
-    storage.set(STORAGE_KEY, locale);
     const url = new URL(window.location.href);
     url.searchParams.set('lang', locale);
     url.searchParams.delete('locale');
@@ -64,7 +63,10 @@ export function startLocale(links: Readonly<Record<string, (locale: Locale) => s
   document.querySelectorAll('[data-lang-option]').forEach((button) => {
     button.addEventListener('click', () => {
       const locale = button.getAttribute('data-lang-option');
-      if (isLocale(locale)) apply(locale);
+      if (!isLocale(locale)) return;
+      // Only a press is stored: every page on the origin shares app_locale, and a ?lang only shows a language.
+      storage.set(STORAGE_KEY, locale);
+      apply(locale);
     });
   });
   apply(initialLocale());
