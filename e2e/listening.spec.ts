@@ -104,3 +104,12 @@ test('the family build switches its language with its own header buttons', async
   await expect(page.locator('.library-note')).toHaveText('New stories will come here over time.');
   await expect(page.locator('.app-footer [data-link="privacy"]')).toHaveAttribute('href', 'https://khe.ee/privacy?lang=en');
 });
+
+test('a ?lang from a link is shown but only a press is stored', async ({ page }) => {
+  await page.goto(`${FAMILY_URL}/?lang=en`);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  expect(await page.evaluate(() => localStorage.getItem('app_locale'))).toBeNull();
+  await page.locator('.app-header [data-lang-option="et"]').click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'et');
+  expect(await page.evaluate(() => localStorage.getItem('app_locale'))).toBe('et');
+});
