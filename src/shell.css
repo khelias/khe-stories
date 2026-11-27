@@ -44,7 +44,7 @@
 .site-header {
   --khe-header-font: var(--sans);
   --khe-header-title-weight: 500;
-  --khe-header-max-width: 1080px;
+  --khe-header-max-width: var(--column, 1080px);
   /* Transparent over the library's sky (estate ADR-035 point 12). */
   --khe-header-bg: transparent;
   --khe-header-blur: 0px;

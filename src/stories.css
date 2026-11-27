@@ -61,6 +61,9 @@ body.stories-page {
   --row: rgb(255 255 255 / 0.08);
   --art: #121a33;
   --edge: 16px;
+  /* The family header's column; header, library and footer share its left edge. */
+  --column: 1080px;
+  --gutter: max(var(--edge), (100% - var(--column)) / 2 + var(--edge));
   --bar-rest: 16px;
   --bar-top: max(var(--bar-rest), env(safe-area-inset-top));
   --dock-space: 15rem;
@@ -160,10 +163,10 @@ body.stories-page::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1232px;
+  max-width: var(--column);
   height: calc(52px + var(--header-top));
   margin: 0 auto;
-  padding: var(--header-top) max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
+  padding: var(--header-top) max(var(--edge), env(safe-area-inset-right)) 0 max(var(--edge), env(safe-area-inset-left));
 }
 
 [data-view="story"] .app-header {
@@ -223,7 +226,7 @@ body.stories-page::before {
 /* Library */
 .library {
   position: relative;
-  max-width: 1232px;
+  max-width: var(--column);
   margin: 0 auto;
   padding: 10px max(var(--edge), env(safe-area-inset-right)) 0 max(var(--edge), env(safe-area-inset-left));
 }
@@ -749,7 +752,7 @@ body.stories-page::before {
 
 .stories-page .site-footer {
   margin-top: 2rem;
-  padding: 1.25rem max(24px, env(safe-area-inset-right)) 2.5rem max(24px, env(safe-area-inset-left));
+  padding: 1.25rem max(var(--gutter), env(safe-area-inset-right)) 2.5rem max(var(--gutter), env(safe-area-inset-left));
 }
 
 body[data-started] .app-footer,
@@ -1038,6 +1041,11 @@ body[data-playing] .icon-pause {
   background: linear-gradient(rgb(4 10 26 / 0.55), rgb(4 10 26 / 0.72) 30%, rgb(4 10 26 / 0.6) 62%, rgb(4 10 26 / 0.92));
 }
 
+/* The story's own bar takes the header's place, so the header's language pill does not peek above it. */
+[data-view="story"][data-listening] .site-header {
+  visibility: hidden;
+}
+
 [data-listening] .story-bar {
   position: fixed;
   top: 0;
@@ -1111,7 +1119,7 @@ body[data-playing] .icon-pause {
   display: flex;
   flex-direction: column;
   padding: 64px max(26px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(26px, env(safe-area-inset-left));
-  background: linear-gradient(rgb(4 10 26 / 0), rgb(4 10 26 / 0.96) 52px);
+  background: linear-gradient(rgb(4 10 26 / 0), rgb(4 10 26) 52px);
 }
 
 .dock-track {
@@ -1359,7 +1367,7 @@ body[data-playing] .icon-pause {
   }
 }
 
-/* Desktop: the library at 1200px, the hero text left and picture right, four covers a row;
+/* Desktop: the library at 1080px, the hero text left and picture right, four covers a row;
    the listening view in two columns, picture and controls left, text right. */
 @media (min-width: 960px) {
   body.stories-page {
