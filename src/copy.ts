@@ -101,7 +101,7 @@ const et = {
   headerDemoNoteStories: 'Mõned jutud kogust, ülejäänud jäävad perele.',
   headerDemoLink: 'Perele →',
   footerLinksLabel: 'Lehe lingid',
-  footer: 'Ise majutatud Eestis',
+  footer: 'Töötab koduserveris Eestis',
   privacyLink: 'Privaatsus',
 };
 
@@ -202,7 +202,7 @@ const en: Record<CopyKey, string> = {
   headerDemoNoteStories: 'A few stories from the collection; the rest stay with the family.',
   headerDemoLink: 'For family →',
   footerLinksLabel: 'Page links',
-  footer: 'Self-hosted in Estonia',
+  footer: 'Runs on a home server in Estonia',
   privacyLink: 'Privacy',
 };
 
